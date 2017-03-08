@@ -1,0 +1,15 @@
+#!/bin/bash
+
+filename="$CHARM_DIR/lib/src/test/java/com/rebaca/abot/RunScenarios"
+TAG_DIR=/etc/rebaca-test-suite/tags
+
+if [ $# == 0 ]; then
+  tags=`cat $TAG_DIR/tags`
+else
+  tags=$*
+fi
+
+echo "Creating the Target JUnit file...";
+sed -i "s|.*tags=.*|\t\ttags={\"${tags}\"},|" ${filename}.java
+
+rm  -f $CHARM_DIR/lib/target/test-classes/com/rebaca/automation/RunScenarios.class

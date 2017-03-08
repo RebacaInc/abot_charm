@@ -1,0 +1,31 @@
+#!/bin/bash
+# Action -List tags
+set -eu
+
+DIR=/etc/rebaca-test-suite/tags
+TAG_FILE_NAME=$(action-get filename)
+
+
+function list_tags_from_file()
+{
+  tagFile=$1
+
+  if [ -f $DIR/$tagFile ]; then
+    tags=`cat $DIR/$tagFile`
+    juju-log "Filename:$tagFile,  Tags:$tags"
+  fi
+}
+
+
+if [ ! -z "$TAG_FILE_NAME" ]; then
+  juju-log "Tag file specified: $TAG_FILE_NAME"
+  list_tags_from_file $TAG_FILE_NAME
+else
+  juju-log "Tag file not specified, will list tags from all files"
+  for tagFile in `ls -t $DIR`
+  do
+    list_tags_from_file $tagFile
+  done
+fi
+
+

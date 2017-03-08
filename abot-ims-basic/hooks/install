@@ -1,0 +1,118 @@
+#!/bin/bash
+# Here do anything needed to install the service
+# i.e. apt-get install -y foo  or  bzr branch http://myserver/mycode /srv/webroot
+# Make sure this hook exits cleanly and is idempotent, common problems here are
+# failing to account for a debconf question on a dependency, or trying to pull
+# from github without installing git first.
+
+set -eu
+
+DIR=/etc/rebaca-test-suite
+mkdir -p $DIR
+
+abot_ims_basic_url=`config-get abot_ims_basic_repo_url`
+abot_ims_basic_package_name=`config-get abot_ims_basic_package`
+sipp_url=`config-get sipp_repo_url`
+
+
+if ! grep "# added by Abot-*/hooks/install" /etc/hosts ; then
+  public_ip=$(unit-get public-address)
+  public_ip_1=`dig +short $public_ip`
+  echo "$public_ip_1 abot-$(cut -d/ -f2 <<< $JUJU_UNIT_NAME).$(config-get zone) # added by Abot-*/hooks/install" >>/etc/hosts
+fi
+
+juju-log "Updating existing Ubuntu libraries..."
+apt-get update
+juju-log "Existing Ubuntu libraries update done."
+
+juju-log "Installing Java."
+cd $CHARM_DIR/lib/
+. scripts/install_java
+juju-log "Java Installed."
+
+#Dependencies for abot-ims-basic 
+apt-get -y install apache2
+
+juju-log "Instlling Maven..."
+apt-get update
+apt-get -y install maven
+juju-log "Maven installation done."
+
+#Download the ABOT package and install it
+wget $abot_ims_basic_url/$abot_ims_basic_package_name
+
+#Install the package using dpkg
+dpkg --install  $abot_ims_basic_package_name
+juju-log "Install abot package completed ..."
+
+
+#Install the PHP plugin
+apt-get -y install php5 libapache2-mod-php5
+
+
+juju-log "SIPP dependency"
+apt-get -y install pcaputils libncursesw5-dev libncurses5-dev libpcap-dev libssl-dev libssl1.0.0 libssl0.9.8 openssl libssl-dev build-essential make
+juju-log "SIPP installation done."
+
+juju-log "Downloading Sipp"
+
+cd /home/ubuntu
+wget $sipp_url
+
+tar -xvzf sipp-3.3.tar.gz
+
+cd sipp-3.3
+
+juju-log "Compiling Sipp"
+make pcapplay_ossl
+
+juju-log "Completed installing Sipp"
+
+juju-log "installing dnsmasq"
+apt-get -q -y --force-yes install dnsmasq
+
+juju-log "Completed installing dnsmasq"
+
+if [ ! -d ~ubuntu/test-scenarios ]; then
+  mkdir -p ~ubuntu/test-scenarios
+  chown ubuntu ~ubuntu/test-scenarios
+  chgrp ubuntu ~ubuntu/test-scenarios
+fi
+
+if [ ! -d ~ubuntu/xml-scenarios ]; then
+  mkdir -p ~ubuntu/xml-scenarios
+  chown ubuntu ~ubuntu/xml-scenarios
+  chgrp ubuntu ~ubuntu/xml-scenarios
+fi
+
+if [ ! -d ~ubuntu/framework-binaries ]; then
+  mkdir -p ~ubuntu/framework-binaries
+  chown ubuntu ~ubuntu/framework-binaries
+  chgrp ubuntu ~ubuntu/framework-binaries
+fi
+
+#Clean out the symlinks from the DIR folder
+find $DIR/ -maxdepth 1 -type l -delete
+
+ln -s $CHARM_DIR/lib/bin $DIR/bin
+ln -s $CHARM_DIR/lib/log $DIR/log
+ln -s $CHARM_DIR/lib/featureFiles $DIR/featureFiles
+ln -s $CHARM_DIR/lib/config $DIR/config
+ln -s $CHARM_DIR/lib/jar $DIR/jar
+ln -s $CHARM_DIR/lib/scenarios $DIR/scenarios
+
+#Change permissions of the charm/lib folders 
+chown -R ubuntu:ubuntu $CHARM_DIR/lib
+
+mkdir -p $DIR/tags
+
+#Install the elasticSearch python linraries
+apt-get -y install python-pip
+pip install elasticsearch
+
+#Install libconfig-dev
+apt-get -y install libconfig-dev
+
+open-port 80/tcp
+
+status-set active "Ready"

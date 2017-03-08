@@ -1,0 +1,86 @@
+#!/bin/bash
+# This hook is executed each time a charm is upgraded after the new charm
+# contents have been unpacked
+# Best practice suggests you execute the hooks/install and
+# hooks/config-changed to ensure all updates are processed
+set -eu
+DIR=/etc/rebaca-test-suite
+
+rm -rf $CHARM_DIR/lib/target
+rm -rf $CHARM_DIR/lib/log/*
+abot_ims_basic_url=`config-get abot_ims_basic_repo_url`
+abot_ims_basic_package_name=`config-get abot_ims_basic_package`
+
+#Clean out the symlinks from the DIR folder
+find $DIR/ -maxdepth 1 -type l -delete
+
+#Remove the existing version of the abot package
+rm -f abot*.deb
+
+#Download the ABOT package and install it
+wget $abot_ims_basic_url/$abot_ims_basic_package_name
+
+#Install the package using dpkg
+dpkg --install  $abot_ims_basic_package_name
+juju-log "Install abot package completed ..."
+
+juju-log "installing dnsmasq"
+apt-get update
+apt-get -q -y --force-yes install dnsmasq
+
+juju-log "Completed installing dnsmasq"
+
+if [ ! -d ~ubuntu/xml-scenarios ]; then
+  mkdir -p ~ubuntu/xml-scenarios
+  chown ubuntu ~ubuntu/xml-scenarios
+  chgrp ubuntu ~ubuntu/xml-scenarios
+fi
+
+if [ `ls -1 ~ubuntu/xml-scenarios | grep xml | wc -l` -gt 0 ]; then
+  mv -f ~ubuntu/xml-scenarios/*.xml $CHARM_DIR/lib/scenarios
+fi
+
+#Copy new feature files from ubuntu home folder
+juju-log "Copying new Feature files to charm folder"
+if [ ! -d ~ubuntu/test-scenarios ]; then
+  mkdir -p ~ubuntu/test-scenarios
+  chown ubuntu ~ubuntu/test-scenarios
+  chgrp ubuntu ~ubuntu/test-scenarios
+fi
+
+if [ `ls -1 ~ubuntu/test-scenarios | grep feature | wc -l` -gt 0 ]; then
+  mkdir -p  ~ubuntu/test-scenarios
+  cp -f ~ubuntu/test-scenarios/*.feature $CHARM_DIR/lib/featureFiles/
+fi
+
+#Create the temporary folder for the framework binaries
+if [ ! -d ~ubuntu/framework-binaries ]; then
+  mkdir -p ~ubuntu/framework-binaries
+  chown ubuntu ~ubuntu/framework-binaries
+  chgrp ubuntu ~ubuntu/framework-binaries
+fi
+
+#Create the tags folder if it doesn't exist
+mkdir -p $DIR/tags
+
+ln -s $CHARM_DIR/lib/bin $DIR/bin
+ln -s $CHARM_DIR/lib/log $DIR/log
+ln -s $CHARM_DIR/lib/featureFiles $DIR/featureFiles
+ln -s $CHARM_DIR/lib/config $DIR/config
+ln -s $CHARM_DIR/lib/jar $DIR/jar
+ln -s $CHARM_DIR/lib/scenarios $DIR/scenarios
+
+
+#Change permissions of charm/lib folder
+chown -R ubuntu:ubuntu $CHARM_DIR/lib
+
+#Install the elasticSearch python linraries
+apt-get -y install python-pip
+pip install elasticsearch
+
+#Install libconfig-dev
+apt-get -y install libconfig-dev
+
+juju-log "Charm updated...Run the test cases using juju action command."
+open-port 80/tcp
+status-set active "Ready"

@@ -1,0 +1,51 @@
+#!/bin/bash
+# Action -Delete tags
+set -e
+DIR=/etc/rebaca-test-suite/tags
+
+# Delete multiple tags from a given file
+function delete_tags_from_file()
+{
+  TAG_NAMES=$1
+  FILE_NAME=$2
+
+  if [ ! -f $DIR/$FILE_NAME ]; then
+    juju-log "Filename($FILE_NAME) does not exist"
+    return
+  fi
+
+  IFS=', ' read -r -a array <<< "$TAG_NAMES"
+  for index in "${!array[@]}"
+  do
+    tagname="${array[index]}"
+
+    cat $DIR/$FILE_NAME | sed "s/,@$tagname//g" > $DIR/tmp
+    cp $DIR/tmp $DIR/$FILE_NAME
+    cat $DIR/$FILE_NAME | sed "s/@$tagname,//g" > $DIR/tmp
+    cp $DIR/tmp $DIR/$FILE_NAME
+    cat $DIR/$FILE_NAME | sed "s/@$tagname//g" > $DIR/tmp
+    cp $DIR/tmp $DIR/$FILE_NAME
+    
+    rm $DIR/tmp
+  done
+
+  UPDATED_TAGS=`cat $DIR/$FILE_NAME`
+  juju-log "Filename:$FILE_NAME,  Tags:$UPDATED_TAGS"
+} 
+
+TAG_NAMES=$(action-get tagnames)
+TAG_FILE_NAME=$(action-get filename)
+
+if [ -z "$TAG_FILE_NAME" ] ; then
+  juju-log "No filename specified; will delete specified tags from all files"
+ 
+  for filename in `ls -t $DIR`
+  do
+    delete_tags_from_file $TAG_NAMES $filename
+  done
+else
+  juju-log "Deleting specified tags from $TAG_FILE_NAME"
+  delete_tags_from_file $TAG_NAMES $TAG_FILE_NAME
+fi
+
+

@@ -1,0 +1,50 @@
+#!/bin/bash
+# Here put anything that is needed to start the service.
+# Note that currently this is run directly after install
+set -eu
+DIR=/etc/rebaca-test-suite
+TAG_DIR=$DIR/tags
+
+tags=`cat $TAG_DIR/tags`
+
+juju-log "Current tags: $tags"
+cd $CHARM_DIR/lib/
+. scripts/tags_update
+
+#perform mvn clean - this copied the required libs to the mvn repo
+mvn clean
+
+#Setup the link to testReports folder
+rm -Rf /var/www/html 2> /dev/null
+ln -s $CHARM_DIR/lib /var/www/html
+
+#ip=$(unit-get public-address)
+ip=$(unit-get private-address)
+if [[  "$ip" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]
+   then
+    juju-log "Private adrress is an IP address - $ip . "
+    DIGSHORT=echo
+   elif [[  "$ip" =~ ^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$ ]]
+   then
+   juju-log "Private address is a FQDN - $ip  "
+   DIGSHORT="dig +short"
+ else
+    juju-log "Unable to find private address "
+    exit
+fi
+ip=`$DIGSHORT $ip`
+echo "$ip"
+sed "/ip=/s/[^ ]*/ip=$ip/" $DIR/bin/sip > $DIR/bin/tmp
+cp $DIR/bin/tmp $DIR/bin/sip
+
+sed "/ip=/s/[^ ]*/ip=$ip/" $DIR/bin/sip_imsi_domain > $DIR/bin/tmp
+cp $DIR/bin/tmp $DIR/bin/sip_imsi_domain
+
+sed "/ip=/s/[^ ]*/ip=$ip/" $DIR/bin/sip-stress > $DIR/bin/tmp
+cp $DIR/bin/tmp $DIR/bin/sip-stress
+
+rm -f $DIR/bin/tmp
+
+chown -h ubuntu:ubuntu $DIR/log
+
+juju-log "Run the test case using juju action command."

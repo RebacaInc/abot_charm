@@ -1,0 +1,31 @@
+#!/bin/bash
+# config-changed occurs everytime a new configuration value is updated (juju set)
+set -e
+
+DIR=/etc/rebaca-test-suite
+TAG_DIR=/etc/rebaca-test-suite/tags
+
+#rm -f $DIR/tags
+tags=$(config-get tags)
+
+if [ -n $TAG_DIR/tags ]; then
+        # Install the user's supplied hashes
+       if [ -f $TAG_DIR/tags ]; then
+         existing_tags=`cat $TAG_DIR/tags`
+         juju-log "Current tags: $existing_tags"
+       fi
+       juju-log "Installing the tags obtained from config: $tags"
+        echo -n "@$tags" > $TAG_DIR/tags
+fi
+
+ip=$(unit-get public-address)
+#ip=`dig +short $ip`
+
+if [ ! -z $ip ]; then
+    sed -i "s/ABOT.Host.IPAddress=[^ ]*/ABOT.Host.IPAddress=$ip/" $CHARM_DIR/lib/config/config.properties
+    sed -i "s#ABOT.ENB.ENB_IPV4_ADDRESS_FOR_S1_MME=[^ ]*#ABOT.ENB.ENB_IPV4_ADDRESS_FOR_S1_MME=$ip/24#" $CHARM_DIR/lib/config/epc_defaults.conf
+    sed -i "s#ABOT.ENB.ENB_IPV4_ADDRESS_FOR_S1U=[^ ]*#ABOT.ENB.ENB_IPV4_ADDRESS_FOR_S1U=$ip/24#" $CHARM_DIR/lib/config/epc_defaults.conf
+else
+    juju-log "IP Address of local unit not available - exiting with error"
+    exit 2
+fi

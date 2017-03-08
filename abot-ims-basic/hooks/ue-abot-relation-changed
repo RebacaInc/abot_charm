@@ -1,0 +1,22 @@
+#!/bin/bash
+set -e
+DIR=/etc/rebaca-test-suite
+
+juju-log "Invoking cscf-relation"
+ims_cscf_zone=$(relation-get public-address)
+if [ -z "$ims_cscf_zone" ]; then
+  juju-log "No data sent yet from Cscf"
+  exit 0
+fi
+
+ims_cscf_hostname=$(dig +short _sip._tcp.$ims_cscf_zone SRV | awk '{print $4}')
+
+juju-log "CSFP FQDN  $ims_cscf_hostname"
+
+ims_cscf_ip=`dig +short $ims_cscf_hostname`
+
+sed -i "s/P_CSCF.Host.IPAddress=[^ ]*/P_CSCF.Host.IPAddress=$ims_cscf_ip/" $CHARM_DIR/lib/config/config.properties
+
+echo -n $ims_cscf_hostname > $DIR/sip_server
+echo -n $ims_cscf_ip > $DIR/ims_cscf_ip
+echo -n $ims_cscf_zone > $DIR/sip_domain

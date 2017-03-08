@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+
+hss_host=`grep "^ABOT.Host.IPAddress" $CHARM_DIR/lib/config/config.properties | cut -d= -f2`
+hss_realm=`grep "^ABOT_HSS.OriginRealm" $CHARM_DIR/lib/config/config.properties | cut -d= -f2`
+
+relation-set public-address=$hss_host
+relation-set hss-realm=$hss_realm
+relation-set hss-port=3868

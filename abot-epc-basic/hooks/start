@@ -1,0 +1,25 @@
+#!/bin/bash
+# Here put anything that is needed to start the service.
+# Note that currently this is run directly after install
+set -eu
+DIR=/etc/rebaca-test-suite
+TAG_DIR=$DIR/tags
+
+tags=`cat $TAG_DIR/tags`
+
+juju-log "Running the test with the tags $tags"
+cd $CHARM_DIR/lib/
+. scripts/tags_update
+
+#Setup the link to testReports folder
+rm -Rf /var/www/html 2> /dev/null
+ln -s $CHARM_DIR/lib /var/www/html
+
+#Build the oaisim
+juju-log "Build oaisim..."
+(cd /srv/openair5G/cmake_targets; ./build_oai_rebaca -I -g --oaisim -x --install-system-files)
+
+#Change permissions of the openair5G folders
+chown -R ubuntu:ubuntu /srv
+
+juju-log "Abot updated! Setup relations to get into ready state..."

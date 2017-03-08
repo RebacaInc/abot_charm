@@ -1,0 +1,14 @@
+options:
+  tags:
+    type: string
+    default: "local-commands"
+    description: "Tag for the feature file to run"
+  abot_epc_basic_repo_url:
+    type: string
+    default: "http://115.113.43.202:8080/rebaca/abot-epc-basic_2.1.0_all.deb"
+    description: "URL of abot-epc-basic repo"
+  abot_epc_basic_package:
+    type: string
+    default: "abot-epc-basic_2.1.0_all.deb"
+    description: "The ABot EPC Basic package"
+

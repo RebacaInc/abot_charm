@@ -1,0 +1,26 @@
+options:
+  zone:
+    default: "rebaca.local"
+    description: The DNS root zone for this service
+    type: string
+  tags:
+    type: string
+    default: "local-commands"
+    description: "Tag for the feature file to run"
+  clearwater_sipp_ip:
+    type: string
+    default: 192.168.255.255
+    description: "IP address of the clearwater sipp"
+  abot_ims_basic_repo_url:
+    type: string
+    default: "http://115.113.43.202:8080/rebaca"
+    description: "URL of abot-ims-basic repo "
+  sipp_repo_url:
+    type: string
+    default: "http://sourceforge.net/projects/sipp/files/sipp/3.3/sipp-3.3.tar.gz"
+    description: "URL of sipp repo"
+  abot_ims_basic_package:
+    type: string
+    default: "abot-ims-basic_2.1.1_all.deb"
+    description: "The ABot IMS Basic package"
+

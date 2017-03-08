@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -eux
+
+juju-log "Setting EPC charm relation variables"
+relation-set TAC=1
+sed -i "s/ABOT.ENB.tracking_area_code=[^ ]*/ABOT.ENB.tracking_area_code=1/" $CHARM_DIR/lib/config/config.properties

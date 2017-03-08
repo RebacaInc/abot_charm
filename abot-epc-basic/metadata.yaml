@@ -1,0 +1,18 @@
+name: abot-epc-basic
+summary: An Automation Framework built on behaviour-oriented testing model
+maintainer: Rebaca Technologies <reachus@rebaca.com>
+description: |
+  A Test Automation Framework for network services that is built on the behaviour-oriented testing model. 
+  This enables users to define test cases as feature files based on domain-specific language. 
+  These feature files could subsequently be executed in automated manner on multiple environments.
+tags:
+  - misc
+  - test-automation
+  - epc
+  - lte
+  - ue
+  - enb
+subordinate: false
+requires:
+  epc:
+    interface: S1-C

@@ -1,0 +1,112 @@
+#!/bin/bash
+# Action -Run
+set -eux
+# Make sure charm-benchmark is installed
+if ! hash benchmark-start 2>/dev/null; then
+apt-get install -y python-pip
+pip install -U charm-benchmark
+fi
+
+#Benchmark Start
+status-set active  "Executing benchmark action"
+benchmark-start
+featurefile_dir="/etc/rebaca-test-suite/featureFiles"
+sipcommand="/etc/rebaca-test-suite/bin/sip"
+sip_users="/etc/rebaca-test-suite/scenarios/user_bulk.csv"
+num_calls=`action-get num-calls`
+callrate=`action-get call-rate`
+sipscenario=`action-get sip-scenario`
+user_range_start=2010000000
+user_range_end=$((user_range_start+100+num_calls*2))
+max_recv_loops=2000
+max_sched_loops=2000
+recv_timeout=20000
+iter_start=0
+total_timeout=`action-get timeout-in-minutes`
+sleep_for_completion=30
+
+
+#Load-test command 
+
+#sed -e "s/URS/$user_range_start/g" -e "s/URE/$user_range_end/g"  <$featurefile_dir/001-clearwater-ims-bulk-user-add.template>$featurefile_dir/001-clearwater-ims-bulk-user-add.featurea
+
+sed -e "s/USER_RANGE_START/$user_range_start/g" -e "s/USER_RANGE_END/$user_range_end/g"  <$featurefile_dir/001-clearwater-ims-bulk-user-add.feature.template>$featurefile_dir/001-clearwater-ims-bulk-user-add.feature
+
+
+./actions/run ims-bulk-user-add
+
+if [ $sipscenario = invite ]; then
+   initial_wait=60
+   scenarioxml="/etc/rebaca-test-suite/scenarios/sip_invite_load.xml"
+else
+   initial_wait=15
+   scenarioxml="/etc/rebaca-test-suite/scenarios/register.xml"
+fi
+
+status-set active  "Executing benchmark action"
+
+#$sipcommand -sf $scenarioxml -inf $sip_users -m  $numusers -r $callrate  -t tn | tee ~/result.log
+
+touch ~/result.log
+#$sipcommand -sf $scenarioxml -inf $sip_users -m  $num_calls -r $callrate -t tn >  ~/result.log 2>&1 &
+
+$sipcommand -sf $scenarioxml -inf $sip_users -m  $num_calls -r $callrate -max_recv_loops $max_recv_loops -max_sched_loops $max_sched_loops -recv_timeout $recv_timeout -t tn >  ~/result.log 2>&1 &
+
+loop_count=`expr $total_timeout \* 2`
+juju-log "resultant loop count "$loop_count 
+sleep $initial_wait
+while [ $iter_start -lt $loop_count ]
+do
+    num_process=`ps -ef | grep sipp | grep -v grep | wc -l`
+    juju-log "number of SIP process "$num_process
+    if [ $num_process -lt 1 ] ; then
+        break
+    else
+        echo "process present"
+        sleep $sleep_for_completion
+    fi
+    iter_start=`expr $iter_start + 1`
+done
+
+num_process=`ps -ef | grep sipp | grep -v grep | wc -l`
+if [ $num_process -gt 0 ] ; then
+    sudo killall sipp
+fi
+
+# Grep/awk/parse the results
+
+callrate=`awk '/Call\ Rate/ { print $7 }' ~/result.log`
+totalcall=`awk '/Total\ Call/ { print $6 }' ~/result.log`
+successfulcall=`awk '/Successful\ call/ { print $6 }' ~/result.log`
+regresponsetime=`awk '/Response\ Time\ register/ { print $7 }' ~/result.log`
+calllength=`awk '/Call\ Length/ { print $6 }' ~/result.log`
+multiply=`expr $successfulcall \* 100`
+passpercentage=`expr $multiply / $totalcall`
+failedcalls=$((totalcall-successfulcall))
+
+if [ $sipscenario = invite ]; then
+   csresponsetime=`awk '/Response\ Time\ call\-set/ { print $7 }' ~/result.log`
+fi
+#set benchmark data
+
+benchmark-data 'callrate' $callrate 'CPS'
+benchmark-data 'totalcalls' $totalcall 'nos'
+benchmark-data 'successfulcalls' $successfulcall  'nos'
+benchmark-data 'failedcalls' $failedcalls 'nos'
+benchmark-data 'regresponsetime' $regresponsetime 'HH:mm:ss:SSS'
+benchmark-data 'calllength' $calllength 'HH:mm:ss:SSS'
+benchmark-data 'passpercentage' $passpercentage 'percent'
+
+if [ $sipscenario = invite ]; then
+   benchmark-data 'csresponsetime' $csresponsetime 'HH:mm:ss:SSS'
+fi
+
+
+# Set the composite, which is the single most important score
+
+benchmark-composite  $passpercentage 'percent' 'desc'
+
+#Benchchmark finish
+benchmark-finish || true
+
+status-set active  "Ready"

@@ -1,0 +1,77 @@
+#!/bin/bash
+# Here do anything needed to install the service
+# i.e. apt-get install -y foo  or  bzr branch http://myserver/mycode /srv/webroot
+# Make sure this hook exits cleanly and is idempotent, common problems here are
+# failing to account for a debconf question on a dependency, or trying to pull
+# from github without installing git first.
+
+set -eu
+
+abot_epc_basic_url=`config-get abot_epc_basic_repo_url`
+abot_epc_basic_package_name=`config-get abot_epc_basic_package`
+DIR=/etc/rebaca-test-suite
+mkdir -p $DIR
+
+juju-log "Updating existing Ubuntu libraries..."
+apt-get update
+juju-log "Existing Ubuntu libraries update done."
+
+juju-log "Installing Java."
+cd $CHARM_DIR/lib/
+. scripts/install_java
+juju-log "Java Installed."
+
+#Installing dependencies for abot-ims-basic
+apt-get -y install apache2
+
+juju-log "Installing Maven..."
+apt-get update
+apt-get -y install maven
+juju-log "Maven installation done."
+
+#Download the ABOT package and install it
+wget $abot_epc_basic_url
+
+#Install the package using dpkg
+dpkg --install  $abot_epc_basic_package_name
+juju-log "Install abot package completed ..."
+
+
+#Install the PHP plugin
+apt-get -y install libapache2-mod-php
+
+
+if [ ! -d ~ubuntu/test-scenarios ]; then
+  mkdir -p ~ubuntu/test-scenarios
+  chown ubuntu ~ubuntu/test-scenarios
+  chgrp ubuntu ~ubuntu/test-scenarios
+fi
+
+if [ ! -d ~ubuntu/framework-binaries ]; then
+  mkdir -p ~ubuntu/framework-binaries
+  chown ubuntu ~ubuntu/framework-binaries
+  chgrp ubuntu ~ubuntu/framework-binaries
+fi
+
+#Create symlinks to installation
+mkdir -p $DIR/tags
+
+ln -s $CHARM_DIR/lib/bin $DIR/bin
+ln -s $CHARM_DIR/lib/log $DIR/log
+ln -s $CHARM_DIR/lib/featureFiles $DIR/featureFiles
+ln -s $CHARM_DIR/lib/config $DIR/config
+ln -s $CHARM_DIR/lib/jar $DIR/jar
+
+#Copy init script of oaisim 
+cp $DIR/bin/oaisim.conf /etc/init 
+
+#Change permissions of the charm/lib folders 
+chown -R ubuntu:ubuntu $CHARM_DIR/lib
+
+#Change permissions of the openair5G folders
+chown -R ubuntu:ubuntu /srv
+
+open-port 80/tcp
+
+juju-log "Abot Install complete!"
+status-set maintenance "Abot installed! Waiting to start..."

@@ -1,0 +1,21 @@
+#!/bin/bash
+set -e
+DIR=/etc/rebaca-test-suite
+
+juju-log "Invoking abot-es-relation"
+es_url_val="$(relation-get es-url)"
+if [ -z "$es_url_val" ]; then
+  juju-log "No data sent yet from abot-analytics"
+  exit 0
+fi
+
+juju-log "ES_URL=$es_url_val"
+echo -n $es_url_val > $DIR/es-conf
+
+#Get the Kibana URL Value
+kibana_url_val="$(relation-get kibana-url)"
+
+if [ ! -z $kibana_url_val ]; then
+  juju-log "KIBANA_URL=$kibana_url_val"
+  echo -n $kibana_url_val > $DIR/kibana-conf
+fi

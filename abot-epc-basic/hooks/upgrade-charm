@@ -1,0 +1,66 @@
+#!/bin/bash
+# This hook is executed each time a charm is upgraded after the new charm
+# contents have been unpacked
+# Best practice suggests you execute the hooks/install and
+# hooks/config-changed to ensure all updates are processed
+set -eu
+DIR=/etc/rebaca-test-suite
+
+abot_epc__basic_url=`config-get abot_epc_basic_repo_url`
+abot_epc_bsic_package_name=`config-get abot_epc_basic_package`
+
+rm -rf $CHARM_DIR/lib/target
+rm -rf $CHARM_DIR/lib/log/*
+
+rm -rf $DIR/*
+
+#Remove the existing version of the abot package
+rm -f abot*.deb
+
+#Download the ABOT package and install it
+#wget http://115.113.43.202:8080/rebaca/abot-epc-basic_1.1.0_all.deb
+wget $abot_epc__basic_url
+
+#Install the package using dpkg
+#dpkg --install  abot-epc-basic_1.1.0_all.deb
+dpkg --install  $abot_epc_bsic_package_name
+juju-log "Install abot package completed ..."
+
+if [ `ls -1 ~ubuntu/test-scenarios | grep feature | wc -l` -gt 0 ]; then
+  mkdir -p  ~ubuntu/test-scenarios
+  cp -f ~ubuntu/test-scenarios/*.feature $CHARM_DIR/lib/featureFiles/
+fi
+
+#Create the temporary folder for the framework binaries
+if [ ! -d ~ubuntu/framework-binaries ]; then
+  mkdir -p ~ubuntu/framework-binaries
+  chown ubuntu ~ubuntu/framework-binaries
+  chgrp ubuntu ~ubuntu/framework-binaries
+fi
+
+#Create symlinks to installation
+mkdir -p $DIR/tags
+
+ln -s $CHARM_DIR/lib/bin $DIR/bin
+ln -s $CHARM_DIR/lib/log $DIR/log
+ln -s $CHARM_DIR/lib/featureFiles $DIR/featureFiles
+ln -s $CHARM_DIR/lib/config $DIR/config
+ln -s $CHARM_DIR/lib/jar $DIR/jar
+
+#Copy oaisim init script
+cp $DIR/bin/oaisim.conf /etc/init 
+
+#Change permissions of charm/lib folder
+chown -R ubuntu:ubuntu $CHARM_DIR/lib
+
+#Build the oaisim
+juju-log "Build oaisim..."
+(cd /srv/openair5G/cmake_targets; ./build_oai_rebaca -g --oaisim -x --install-system-files)
+
+#Change permissions of the openair5G folders
+chown -R ubuntu:ubuntu /srv
+
+open-port 80/tcp
+
+juju-log "Abot update complete!"
+status-set maintenance "Abot updated! Reset relations to get into ready state"
