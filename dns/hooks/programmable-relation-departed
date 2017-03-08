@@ -1,0 +1,40 @@
+#!/usr/bin/python
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.environ['CHARM_DIR'],
+                                                    'contrib')))
+
+#from bind.provider import BindProvider
+
+from charmhelpers.core.hookenv import (
+    log,
+    config,
+    unit_get,
+    relation_get,
+)
+
+from common import load_class
+
+class ProgrammableBroken(object):
+
+    def __init__(self):
+        self.config = config()
+        self.provider = self.remove_record()
+
+
+    def remove_record(self):
+        domain = relation_get('domain')
+        alias = relation_get('alias')
+        addr = relation_get('addr')
+        rr = relation_get('rr').upper()
+
+        parsed = {'domain': domain, 'alias': alias, 'addr': addr, 'rr': rr}
+
+        class_string = "{}.provider.Provider".format(self.config['provider'])
+        provider = load_class(class_string)
+        p = provider()
+        p.remove_record(parsed, domain)
+
+if __name__ == '__main__':
+    c = ProgrammableBroken()

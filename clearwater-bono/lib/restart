@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+
+# Restart clearwater-infrastructure, and stop bono (to be restarted by monit)
+service clearwater-infrastructure restart
+service bono stop

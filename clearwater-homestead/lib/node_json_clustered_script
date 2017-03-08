@@ -1,0 +1,58 @@
+#!/usr/bin/python
+import subprocess
+import string
+import socket
+import os
+import sys
+import argparse
+
+# Create the ~/chef-solo/data_bags/node/<index>.json files.
+#
+# The node.json file contains the machines IP address, the machine ID (a number)
+# and the repo server.
+#
+# If the node is being clustered, the role 'clustered' is added, and if the
+# node is joinging the attribute 'joining' is added
+#
+# The node.json file is templated in lib/node_json_clustered_template.
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--cluster', action='store_true')
+parser.add_argument('--joining', action='store_true')
+parser.add_argument('--index', type=int, required=True)
+parser.add_argument('--ip', type=str, required=True)
+
+args = parser.parse_args()
+
+# Populate the dictionary
+d = {}
+
+d['LOCAL_IP'] = socket.gethostbyname(args.ip)
+d['MACHINE_ID'] = str(args.index + 1)
+d['REPO'] = subprocess.check_output(["config-get", "repo"]).rstrip()
+
+if args.cluster:
+	d['CLUSTER'] = ",\n    \"role[clustered]\""
+	d['CLUSTERED'] = ", \"clustered\""
+else:
+	d['CLUSTER'] = ""
+	d['CLUSTERED'] = ""
+
+if args.joining:
+	d['JOINING'] = ",\n      \"joining\": true"
+else:
+	d['JOINING'] = ""
+
+# Open template file
+charm_dir = os.environ['CHARM_DIR']
+with open( '%s/lib/node_json_clustered_template' % charm_dir ) as f:
+        src = string.Template( f.read() )
+
+# Make the substitutions
+result = src.substitute(d)
+
+# Write to ~/chef-solo/data_bags/node/<index>.json
+node_file = str(args.index + 1) + ".json"
+with open('/home/ubuntu/chef-solo/data_bags/node/%s' % node_file, 'w') as f:
+	f.write(result)

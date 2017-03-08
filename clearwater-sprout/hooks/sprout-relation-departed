@@ -1,0 +1,19 @@
+#!/bin/bash
+set -e
+
+# Get the machine number of this unit and the remote unit. This
+# takes the form '<charm name>/<index>
+peer_index=$(echo $JUJU_REMOTE_UNIT | cut -d'/' -f2)
+this_index=$(echo $JUJU_UNIT_NAME | cut -d'/' -f2)
+
+if [ $this_index -gt $peer_index ]
+  then
+    # Remove this node.
+    monit unmonitor -g sprout
+    service sprout start-quiesce
+  else
+    # Remove the node.json in databags that corresponds to the node being removed.
+    file_name="/home/ubuntu/chef-solo/data_bags/node/"$peer_index".json"
+    rm $file_name
+    chef-solo -c /home/ubuntu/chef-solo/solo.rb -j /home/ubuntu/chef-solo/node.json
+fi

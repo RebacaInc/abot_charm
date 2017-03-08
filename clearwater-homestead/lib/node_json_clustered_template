@@ -1,0 +1,20 @@
+{
+  "id": "$LOCAL_IP",
+  "name": "$LOCAL_IP",
+  "chef_environment": "_default",
+  "json_class": "Chef::Node",
+  "automatic": {
+    "role": "homestead",
+    "roles": ["clearwater-infrastructure", "homestead"$CLUSTERED],
+    "cloud": {
+      "local_ipv4": "$LOCAL_IP"
+    },
+    "clearwater": {
+      "index": $MACHINE_ID$JOINING
+    }
+  },
+  "chef_type": "node",
+  "run_list": [
+    "role[homestead]"$CLUSTER
+  ]
+}

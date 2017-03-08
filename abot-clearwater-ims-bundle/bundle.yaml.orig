@@ -1,0 +1,77 @@
+  services:
+    "clearwater-bono":
+      charm: cs:~abotcharm/trusty/clearwater-bono-0
+      num_units: 1
+      constraints: "arch=amd64"
+      options:
+        zone: "rebaca.local"
+      expose: true
+      annotations:
+        "gui-x": "400"
+        "gui-y": "900"
+    "clearwater-sprout":
+      charm: cs:~abotcharm/trusty/clearwater-sprout-0
+      num_units: 1
+      constraints: "arch=amd64"
+      options:
+        zone: "rebaca.local"
+      annotations:
+        "gui-x": "400"
+        "gui-y": "600"
+    "clearwater-homestead":
+      charm: cs:~abotcharm/trusty/clearwater-homestead-1
+      num_units: 1
+      constraints: "arch=amd64"
+      options:
+        zone: "rebaca.local"
+      annotations:
+        "gui-x": "200"
+        "gui-y": "300"
+  #  "clearwater-sipp":
+   #   charm: "/home/rebaca/abot_bundles/clearwater-juju-trusty-with-abot/charms/trusty/clearwater-sipp"
+    #  num_units: 1
+     # constraints: "arch=amd64 tags=sipp2"
+      #options:
+       # zone: "clearwater.local"
+        #user_count: 40000
+   #   annotations:
+    #    "gui-x": "400"
+     #   "gui-y": "1200"
+    dns:
+      charm: cs:~abotcharm/trusty/dns-0
+      num_units: 1
+      constraints: "arch=amd64"
+      options:
+        domain: "rebaca.local"
+      annotations:
+        "gui-x": "1000"
+        "gui-y": "450"
+    abot-ims-basic:
+      charm: cs:~abotcharm/trusty/abot-ims-basic-6
+      constraints: "arch=amd64"
+      num_units: 1
+      options:
+        zone: "rebaca.local"
+      annotations:
+        "gui-x": "400"
+        "gui-y": "700"
+  relations:
+    - - "clearwater-homestead:programmable-multiple"
+      - "dns:programmable-multiple"
+    - - "clearwater-sprout:programmable-multiple"
+      - "dns:programmable-multiple"
+    - - "clearwater-bono:programmable-multiple"
+      - "dns:programmable-multiple"
+    - - "abot-ims-basic:programmable-multiple"
+      - "dns:programmable-multiple"
+    - - "clearwater-bono:cscf"
+      - "clearwater-sprout:pcscf"
+    - - "clearwater-homestead:homestead-cscf"
+      - "clearwater-sprout:homestead-hss"
+    - - "abot-ims-basic:hss-prov"
+      - "clearwater-homestead:homestead-prov-user"
+    - - "clearwater-bono:ue"
+      - "abot-ims-basic:ue-abot"
+    - - "abot-ims-basic:hss-abot"
+      - "clearwater-homestead:hss"
+  series: trusty

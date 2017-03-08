@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+
+# Restart clearwater-infrastructure, and stop sprout (to be restarted by monit)
+service clearwater-infrastructure restart
+service sprout stop

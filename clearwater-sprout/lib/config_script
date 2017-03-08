@@ -1,0 +1,68 @@
+#!/bin/bash
+
+relation_name=$1
+
+set -e
+
+# Defaults
+sprout_hostname=sprout.$(config-get zone)
+hs_hostname=homestead.$(config-get zone):8888
+hs_provisioning_hostname=homestead.$(config-get zone):8889
+xdms_hostname=
+ralf_hostname=ralf.$(config-get zone):10888
+chronos_hostname=localhost:7253
+
+# Import existing configuration
+[ ! -f /etc/clearwater/config ] || . /etc/clearwater/config
+
+# Apply new configuration
+home_domain=$(config-get zone)
+[ "$relation-name" != "homestead-hss" ] || [ "$(relation-get public-address)" = "" ] || hs_hostname=$(relation-get public-address):8888
+[ "$relation-name" != "homestead-hss" ] || [ "$(relation-get public-address)" = "" ] || hs_provisioning_hostname=$(relation-get public-address):8889
+[ "$relation-name" != "xdms" ] || [ "$(relation-get public-address)" = "" ] || xdms_hostname=$(relation-get public-address):7888
+[ "$relation-name" != "ralf-ctf" ] || [ "$(relation-get public-address)" = "" ] || ralf_hostname=$(relation-get public-address):9888
+sas_server=$(config-get sas)
+enum_server=$(config-get enum)
+local_ip=$(unit-get private-address)
+public_ip=$(unit-get public-address)
+public_hostname=sprout-$(cut -d/ -f2 <<< $JUJU_UNIT_NAME).$(config-get zone)
+node_idx=$(($(cut -d/ -f2 <<< $JUJU_UNIT_NAME) + 1))
+reg_max_expires=$(config-get reg_max_expires)
+default_session_expires=$(config-get session_max_expires)
+target_latency_us=$(config-get target_latency_us)
+
+# Write configuration back
+mkdir -p /etc/clearwater
+cat >/etc/clearwater/local_config <<EOF
+# Per node configuration
+node_idx=$node_idx
+
+# Local IP configuration
+local_ip=$local_ip
+public_ip=$public_ip
+public_hostname=$public_hostname
+
+# GR site names
+local_site_name=single_site
+remote_site_name=
+
+# etcd configuration
+etcd_cluster=
+EOF
+
+cat >/etc/clearwater/shared_config <<EOF
+# Deployment definitions
+home_domain=$home_domain
+sprout_hostname=$sprout_hostname
+hs_hostname=$hs_hostname
+hs_provisioning_hostname=$hs_provisioning_hostname
+xdms_hostname=$xdms_hostname
+ralf_hostname=$ralf_hostname
+sas_server=$sas_server
+enum_server=$enum_server
+chronos_hostname=$chronos_hostname
+
+reg_max_expires=$reg_max_expires
+default_session_expires=$default_session_expires
+target_latency_us=$target_latency_us
+EOF

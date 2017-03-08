@@ -1,0 +1,15 @@
+#!/bin/bash
+# Here put anything that is needed to start the service.
+# Note that currently this is run directly after install
+# i.e. 'service apache2 start'
+set -e
+
+# This hook needs to be idempotent, so this could be run when bono is
+# already running, when it's running but not monitored by monit, when
+# it's stopped but being monitored (so it's about to start), or stopped
+# and unmonitored. To cover all these cases, restart bono, reload monit,
+# then finally have monit monitor bono.  Note that reloading monit can
+# fail and restarting bono can fail because monit will restart it.
+service bono restart || true
+reload clearwater-monit &> /dev/null || true
+monit monitor -g bono

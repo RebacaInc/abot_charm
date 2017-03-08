@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+
+# Set the cscf-uri on the relation back to the AS.
+scscf=5054
+. /etc/clearwater/config
+[ -n "$scscf_uri" ] || scscf_uri=sip:$sprout_hostname:$scscf
+relation-set cscf-uri=$scscf_uri

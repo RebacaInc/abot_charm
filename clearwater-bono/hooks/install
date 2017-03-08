@@ -1,0 +1,37 @@
+#!/bin/bash
+set -e
+
+if ! grep "# added by clearwater-*/hooks/install" /etc/hosts ; then
+  public_ip=$(unit-get public-address)
+  echo "$public_ip bono-$(cut -d/ -f2 <<< $JUJU_UNIT_NAME).$(config-get zone) # added by clearwater-*/hooks/install" >>/etc/hosts
+fi
+
+# Install chef solo, and create the node.json and config file
+$CHARM_DIR/lib/chef_solo_install
+$CHARM_DIR/lib/node_json_script
+$CHARM_DIR/lib/config_script
+
+apt-get update
+
+# After we install dnsmasq, DNS might drop for a few seconds.  Install it ahead of time
+# and wait for DNS to recover.
+apt-get -q -y --force-yes install dnsmasq
+iterations=0
+while [ $(dig +short security.ubuntu.com | wc -l) == 0 ] && [ $iterations -lt 60 ] ; do
+  echo "Waiting for DNS to security.ubuntu.com to recover ($iterations/60)..."
+  sleep 1
+  iterations=$((iterations + 1))
+done
+
+# Install the node
+chef-solo -c /home/ubuntu/chef-solo/solo.rb -j /home/ubuntu/chef-solo/node.json
+
+# Expose the correct ports
+open-port 22/tcp
+open-port 123/udp
+open-port 161/udp
+open-port 3478/tcp
+open-port 3478/udp
+open-port 5060/tcp
+open-port 5060/udp
+open-port 5062/tcp

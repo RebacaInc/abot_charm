@@ -1,0 +1,29 @@
+options:
+  zone:
+    default: "clearwater.local"
+    description: The DNS root zone for this service
+    type: string
+  sas:
+    default: ""
+    description: The location of the SAS server
+    type: string
+  cdf:
+    default: ""
+    description: The location of the CDF to bill to
+    type: string 
+  turn_workaround: 
+    default: ""
+    description: TURN workaround password, used by faulty WebRTC clients
+    type: string
+  trusted_peers:
+    default: ""
+    description: Comma-separated list of IP addresses of trusted peers
+    type: string
+  target_latency_us:
+    default: 100000
+    description: Target request latency for overload control (microseconds)
+    type: int
+  repo:
+    default: http://repo.cw-ngv.com/archive/repo110/
+    description: The location of the repo server
+    type: string

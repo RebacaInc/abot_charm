@@ -1,0 +1,7 @@
+#!/bin/bash
+set -e
+
+# Restart clearwater-infrastructure, and stop homestead/homestead-prov (to be restarted by monit)
+service clearwater-infrastructure restart
+service homestead stop
+service homestead-prov stop

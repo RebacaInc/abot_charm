@@ -1,0 +1,13 @@
+dns-testing:
+  services:
+    dtest:
+      charm: local:trusty/dtest
+    dns:
+      charm: local:trusty/dns
+      expose: true
+      options:
+        domain: example.com
+  relations:
+    - ["dns:programmable", "dtest:programmable"]
+    - ["dns:programmable-multiple", "dtest:programmable-multiple"]
+  series: trusty

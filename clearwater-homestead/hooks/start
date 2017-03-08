@@ -1,0 +1,17 @@
+#!/bin/bash
+# Here put anything that is needed to start the service.
+# Note that currently this is run directly after install
+# i.e. 'service apache2 start'
+set -e
+
+# This hook needs to be idempotent, so this could be run when homestead is
+# already running, when it's running but not monitored by monit, when
+# it's stopped but being monitored (so it's about to start), or stopped
+# and unmonitored. To cover all these cases, restart homestead, reload monit,
+# then finally have monit monitor homestead.  Note that restarting monit can
+# fail and restarting homestead can fail because monit will restart it.
+service homestead restart || /usr/bin/true
+service homestead-prov restart || /usr/bin/true
+reload clearwater-monit &> /dev/null || true
+monit monitor -g homestead
+monit monitor -g homestead-prov

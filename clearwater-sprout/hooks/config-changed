@@ -1,0 +1,9 @@
+#!/bin/bash
+set -e
+
+# Update the /etc/clearwater/*_config files, the node.json, and re-run
+# chef-solo
+$CHARM_DIR/lib/config_script
+$CHARM_DIR/lib/node_json_script
+chef-solo -c /home/ubuntu/chef-solo/solo.rb -j /home/ubuntu/chef-solo/node.json
+$CHARM_DIR/lib/restart

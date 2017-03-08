@@ -1,0 +1,27 @@
+name: clearwater-sprout
+summary: Sprout charm for Project Clearwater
+maintainer: Project Clearwater Maintainers <maintainers@projectclearwater.org>
+description: Sprout charm for Project Clearwater
+categories:
+  - misc
+subordinate: false
+requires:
+  programmable-multiple:
+    interface: dns-multi
+  homestead-hss:
+    interface: homestead-hss-interface
+  xdms:
+    interface: 3GPP-Ut
+    optional: true
+  ralf-ctf:
+    interface: ralf-ctf-interface
+    optional: true
+  as:
+    interface: 3GPP-ISC
+    optional: true
+provides:
+  pcscf:
+    interface: 3GPP-Mw
+peers:
+  sprout:
+    interface: sprout-interface

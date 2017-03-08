@@ -1,0 +1,10 @@
+.bzr
+.bzrignore
+.coverage
+*.pyc
+Gemfile
+Gemfile*
+Guard*
+.tox
+.venv
+.cache

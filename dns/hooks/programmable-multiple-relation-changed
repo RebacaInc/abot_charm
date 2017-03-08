@@ -1,0 +1,50 @@
+#!/usr/bin/python
+import json
+import os
+import sys
+# Add charmhelpers to the system path.
+sys.path.insert(0, os.path.abspath(os.path.join(os.environ['CHARM_DIR'],
+                'contrib')))
+
+from charmhelpers.core.hookenv import (
+    config,
+    log,
+    unit_get,
+    relation_get,
+    relation_set,
+    relation_id,
+)
+
+from common import trim_empty_array_elements as trim
+from common import resolve_hostname_to_ip as getip
+from common import load_class
+
+class ProgrammableChanged(object):
+
+    def __init__(self):
+        self.config = config()
+        relid = relation_id()
+        relation_set(relid, {'public-address':
+                     getip(unit_get('public-address'))})
+        self.add_resource()
+
+    def add_resource(self):
+        if not relation_get('resources'):
+            log("No rr sent on the wire. Doing nothing. You may need to remove"
+                " and re-add the relationship to trigger this hook again.")
+            return
+
+        domain = relation_get('domain')
+
+        resources = json.loads(relation_get('resources'))
+        if not domain:
+            domain = config()['domain']
+
+        class_string = "{}.provider.Provider".format(self.config['provider'])
+        provider = load_class(class_string)
+        p = provider(domain)
+        p.add_record(resources)
+
+
+if __name__ == '__main__':
+    c = ProgrammableChanged()
