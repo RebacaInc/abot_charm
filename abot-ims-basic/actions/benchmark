@@ -36,7 +36,7 @@ sed -e "s/USER_RANGE_START/$user_range_start/g" -e "s/USER_RANGE_END/$user_range
 ./actions/run ims-bulk-user-add
 
 if [ $sipscenario = invite ]; then
-   initial_wait=60
+   initial_wait=15
    scenarioxml="/etc/rebaca-test-suite/scenarios/sip_invite_load.xml"
 else
    initial_wait=15
