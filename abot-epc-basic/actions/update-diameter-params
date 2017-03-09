@@ -12,7 +12,7 @@ if [ ! -z "$S6ASERVER_ORIGINHOST" ]; then
   juju-log "Setting S6aServer_OriginHost=$S6ASERVER_ORIGINHOST"
   sed -i "s/S6aServer.OriginHost=[^ ]*/S6aServer.OriginHost=$S6ASERVER_ORIGINHOST/" $CHARM_DIR/lib/config/config.properties
   if [ `grep -c $S6ASERVER_ORIGINHOST /etc/hosts` == "0" ]; then
-     public_hostname=$(unit-get public-address)
+     public_hostname=$(unit-get private-address)
      juju-log "Public Hostname: $public_hostname"
      public_ip_address=`dig +short $public_hostname`
      juju-log "Inserting originhost($S6ASERVER_ORIGINHOST) into /etc/hosts file for IP $public_ip_address"

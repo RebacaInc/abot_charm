@@ -52,7 +52,7 @@ touch ~/result.log
 
 $sipcommand -sf $scenarioxml -inf $sip_users -m  $num_calls -r $callrate -max_recv_loops $max_recv_loops -max_sched_loops $max_sched_loops -recv_timeout $recv_timeout -t tn >  ~/result.log 2>&1 &
 
-loop_count=`expr $total_timeout \* 2`
+loop_count=$((total_timeout*2))
 juju-log "resultant loop count "$loop_count 
 sleep $initial_wait
 while [ $iter_start -lt $loop_count ]
@@ -80,8 +80,8 @@ totalcall=`awk '/Total\ Call/ { print $6 }' ~/result.log`
 successfulcall=`awk '/Successful\ call/ { print $6 }' ~/result.log`
 regresponsetime=`awk '/Response\ Time\ register/ { print $7 }' ~/result.log`
 calllength=`awk '/Call\ Length/ { print $6 }' ~/result.log`
-multiply=`expr $successfulcall \* 100`
-passpercentage=`expr $multiply / $totalcall`
+multiply=$((successfulcall*100))
+passpercentage=$((multiply/totalcall))
 failedcalls=$((totalcall-successfulcall))
 
 if [ $sipscenario = invite ]; then

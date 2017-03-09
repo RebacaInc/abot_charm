@@ -18,7 +18,7 @@ The result of each test execution is displayed in a web-based reporting UI; this
 
 Before deploying this bundle, you should bootstrap a Juju environment, as documented in the https://jujucharms.com/docs/stable/getting-started. The testing of this charm on MAAS cloud is complete, and there are plans to test it on Amazon and OpenStack in the near future. If you get it working on a different cloud service, please let us know!
 
-OAI is a relatively simpler bundle consisting of Mysql, Oai-hss, Oai-epc and Abot-EPC-basic, together forming the SUT for feature file execution. The ABot OAI EPC bundle has been integrated and tested on MAAS cloud. You can find the ABot OAI EPC bundle at [  ]. To know more about ABot please visit charmstore (https://jujucharms.com/u/abotcharm/abot-epc-basic/xenial/).
+OAI is a relatively simpler bundle consisting of Mysql, Oai-hss, Oai-epc and Abot-EPC-basic, together forming the SUT for feature file execution. The ABot OAI EPC bundle has been integrated and tested on MAAS cloud. You can find the ABot OAI EPC bundle at [https://jujucharms.com/u/abotcharm/abot-oai-epc-bundle/]. To know more about ABot please visit charmstore (https://jujucharms.com/u/abotcharm/abot-epc-basic/xenial/).
 
 The ABot OAI EPC bundle ties up all the above-mentioned charms and their relations together, allowing the deployment of a full system in a single step.
           
