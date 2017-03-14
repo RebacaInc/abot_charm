@@ -6,6 +6,7 @@ DIR=/etc/rebaca-test-suite/tags
 ELASTIC_FILE_NAME=/etc/rebaca-test-suite/es-conf
 
 tags_defined=1
+no_report_needed=0
 
 TAG_NAMES=$(action-get tagnames)
 TAG_FILE_NAME=$(action-get filename)
@@ -24,6 +25,10 @@ if [ "$#" -eq  "0" ]; then
 else 
    TAG_NAMES="$1"
    juju-log " Tag = $1"
+
+   if [ $# -gt 1 ] && [ "$2" == "no-report" ]; then
+     no_report_needed=1
+   fi
 fi
 
 if [ -z "$TAG_NAMES" ]; then
@@ -72,19 +77,27 @@ else
 
   #Copying log artifacts to appropriate artifacts folder
   LAST_REPORT_DIR="$(ls -td -- ${CHARM_DIR}/lib/artifacts/*/ | head -n 1)"
-  cp -R $CHARM_DIR/lib/log/*.* $LAST_REPORT_DIR
 
-  #Process Test results and post to ElasticSearch
-  touch $ELASTIC_FILE_NAME
-  ES_CONF=`cat $ELASTIC_FILE_NAME`
-  if [  -z "$ES_CONF" ]; then
-    juju-log "No ES conf defined - hence result not pushed to ES"
+  if [ $no_report_needed -eq 0 ]; then
+    cp -R $CHARM_DIR/lib/log/*.* $LAST_REPORT_DIR
+  
+    #Process Test results and post to ElasticSearch
+    touch $ELASTIC_FILE_NAME
+    ES_CONF=`cat $ELASTIC_FILE_NAME`
+    if [  -z "$ES_CONF" ]; then
+      juju-log "No ES conf defined - hence result not pushed to ES"
+    else
+      juju-log "Pushing Test result to ES"
+      LAST_REPORT_FILE_NAME=`basename $LAST_REPORT_DIR`
+      juju-log "Renaming Test result to $LAST_REPORT_FILE_NAME.json"
+      cp ${CHARM_DIR}/lib/artifacts/TestResults.json ${CHARM_DIR}/lib/artifacts/$LAST_REPORT_FILE_NAME.json
+      python ${CHARM_DIR}/lib/bin/es-feed.py --elastic $ES_CONF  --filepath ${CHARM_DIR}/lib/artifacts/$LAST_REPORT_FILE_NAME.json
+    fi
   else
-    juju-log "Pushing Test resul to ES"
-    LAST_REPORT_FILE_NAME=`basename $LAST_REPORT_DIR`
-    juju-log "Renaming Test result to $LAST_REPORT_FILE_NAME.json"
-    cp ${CHARM_DIR}/lib/artifacts/TestResults.json ${CHARM_DIR}/lib/artifacts/$LAST_REPORT_FILE_NAME.json
-    python ${CHARM_DIR}/lib/bin/es-feed.py --elastic $ES_CONF  --filepath ${CHARM_DIR}/lib/artifacts/$LAST_REPORT_FILE_NAME.json
+    LAST_REPORT_DATETIME=`basename $LAST_REPORT_DIR`
+    cd ${CHARM_DIR}/lib/artifacts
+    tar czf ${LAST_REPORT_DATETIME}.tgz $LAST_REPORT_DATETIME
+    rm -rf $LAST_REPORT_DATETIME
   fi
 
 

@@ -11,6 +11,7 @@ fi
 status-set active  "Executing benchmark action"
 benchmark-start
 featurefile_dir="/etc/rebaca-test-suite/featureFiles"
+configfile_dir="/etc/rebaca-test-suite/config"
 sipcommand="/etc/rebaca-test-suite/bin/sip"
 sip_users="/etc/rebaca-test-suite/scenarios/user_bulk.csv"
 num_calls=`action-get num-calls`
@@ -25,15 +26,61 @@ iter_start=0
 total_timeout=`action-get timeout-in-minutes`
 sleep_for_completion=30
 
+system_kpi()
+{
+      echo "System_KPI $1 $(date)###################" >> ~/systemkpi.log
+      echo "-----------------------------" >> ~/systemkpi.log
+      echo " CPU Usage - $(grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage "%"}')" >> ~/systemkpi.log
+      echo "-----------------------------" >> ~/systemkpi.log
+      free -m >> ~/systemkpi.log
+      echo "-----------------------------" >> ~/systemkpi.log
+      df -h >> ~/systemkpi.log
+      echo "-----------------------------" >> ~/systemkpi.log
 
-#Load-test command 
+}
 
-#sed -e "s/URS/$user_range_start/g" -e "s/URE/$user_range_end/g"  <$featurefile_dir/001-clearwater-ims-bulk-user-add.template>$featurefile_dir/001-clearwater-ims-bulk-user-add.featurea
+kill_running_processes()
+{
+    num_process=`ps -ef | grep sipp | grep -v grep | wc -l`
+    if [ $num_process -gt 0 ] ; then
+        sudo killall sipp
+        sleep 2
+    fi
+    
+    java_process=`ps -ef | grep java | grep -v grep | wc -l`
+    if [ $java_process -gt 0 ] ; then
+        sudo killall java
+        sleep 2
+    fi
+    
+    tcpdump_process=`ps -ef | grep tcpdump | grep -v grep | wc -l`
+    if [ $tcpdump_process -gt 0 ] ; then
+        sudo killall tcpdump
+        sleep 2
+    fi
+}
+
+#Load-test command
+
+system_kpi  IMS-BENCHMARK_START
+
+PACKET_CAPTURE_ENABLE=`grep "ABOT.PacketCapture=" /etc/rebaca-test-suite/config/config.properties | awk -F"=" '{print $2}'`
+juju-log "PACKET_CAPTURE_ENABLE=$PACKET_CAPTURE_ENABLE"
+
+
+kill_running_processes
 
 sed -e "s/USER_RANGE_START/$user_range_start/g" -e "s/USER_RANGE_END/$user_range_end/g"  <$featurefile_dir/001-clearwater-ims-bulk-user-add.feature.template>$featurefile_dir/001-clearwater-ims-bulk-user-add.feature
 
 
-./actions/run ims-bulk-user-add
+if [ "$PACKET_CAPTURE_ENABLE" == "true" ]; then
+  sed -ie "s|ABOT\.PacketCapture=.*|ABOT\.PacketCapture=false|" $configfile_dir/config.properties
+  ./actions/run ims-bulk-user-add no-report
+  sed -ie "s|ABOT\.PacketCapture=.*|ABOT\.PacketCapture=true|" $configfile_dir/config.properties
+else
+  ./actions/run ims-bulk-user-add no-report
+fi
+
 
 if [ $sipscenario = invite ]; then
    initial_wait=15
@@ -45,15 +92,14 @@ fi
 
 status-set active  "Executing benchmark action"
 
-#$sipcommand -sf $scenarioxml -inf $sip_users -m  $numusers -r $callrate  -t tn | tee ~/result.log
-
 touch ~/result.log
-#$sipcommand -sf $scenarioxml -inf $sip_users -m  $num_calls -r $callrate -t tn >  ~/result.log 2>&1 &
+
 
 $sipcommand -sf $scenarioxml -inf $sip_users -m  $num_calls -r $callrate -max_recv_loops $max_recv_loops -max_sched_loops $max_sched_loops -recv_timeout $recv_timeout -t tn >  ~/result.log 2>&1 &
 
+
 loop_count=$((total_timeout*2))
-juju-log "resultant loop count "$loop_count 
+juju-log "resultant loop count "$loop_count
 sleep $initial_wait
 while [ $iter_start -lt $loop_count ]
 do
@@ -72,6 +118,7 @@ num_process=`ps -ef | grep sipp | grep -v grep | wc -l`
 if [ $num_process -gt 0 ] ; then
     sudo killall sipp
 fi
+
 
 # Grep/awk/parse the results
 
@@ -95,8 +142,6 @@ benchmark-data 'successfulcalls' $successfulcall  'nos'
 benchmark-data 'failedcalls' $failedcalls 'nos'
 benchmark-data 'regresponsetime' $regresponsetime 'HH:mm:ss:SSS'
 benchmark-data 'calllength' $calllength 'HH:mm:ss:SSS'
-benchmark-data 'passpercentage' $passpercentage 'percent'
-
 if [ $sipscenario = invite ]; then
    benchmark-data 'csresponsetime' $csresponsetime 'HH:mm:ss:SSS'
 fi
