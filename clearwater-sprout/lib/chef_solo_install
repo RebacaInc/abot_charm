@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Configure git proxy
+if [[ ! -z $http_proxy ]]; then
+    juju-log "Configuring git proxy..."
+    git config --global http.proxy $http_proxy
+fi
+
 # This covers installing chef-solo and the Clearwater chef recipes
 # Install chef and needed tools/libraries
 apt-get -y install chef git libxml2-dev libxslt1-dev wget curl
@@ -7,11 +13,13 @@ apt-get -y install chef git libxml2-dev libxslt1-dev wget curl
 # Pull down the Clearwater chef recipes
 if [ ! -d /home/ubuntu/chef-solo ]
 then
+  juju-log "Cloning Clearwater/chef recipes..."
   mkdir /home/ubuntu/chef-solo
-  git clone --recursive git://github.com/Metaswitch/chef.git /home/ubuntu/chef-solo
+  git clone --recursive https://github.com/Metaswitch/chef.git /home/ubuntu/chef-solo
 fi
 
 # Update the chef recipes
+juju-log "Updating chef recipes..."
 cd /home/ubuntu/chef-solo
 git checkout release-110
 git submodule update --init

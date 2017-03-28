@@ -30,10 +30,12 @@ apt-get -y install maven
 juju-log "Maven installation done."
 
 #Download the ABOT package and install it
-wget $abot_epc_basic_url
+if [[ ! -f "$CHARM_DIR/payload/$abot_epc_basic_package_name" ]]; then
+    wget $abot_epc_basic_url/$abot_epc_basic_package_name -O $CHARM_DIR/payload/$abot_epc_basic_package_name
+fi
 
 #Install the package using dpkg
-dpkg --install  $abot_epc_basic_package_name
+dpkg --install $CHARM_DIR/payload/$abot_ims_basic_package_name
 juju-log "Install abot package completed ..."
 
 
