@@ -30,19 +30,21 @@ cd $CHARM_DIR/lib/
 . scripts/install_java
 juju-log "Java Installed."
 
-#Dependencies for abot-ims-basic 
-apt-get -y install apache2
+#Dependencies for abot-ims-basic
+apt-get -y install apache2 oracle-java8-set-default
 
-juju-log "Instlling Maven..."
-apt-get update
+juju-log "Installing Maven..."
 apt-get -y install maven
+
 juju-log "Maven installation done."
 
 #Download the ABOT package and install it
-wget $abot_ims_basic_url/$abot_ims_basic_package_name
+if [[ ! -f "$CHARM_DIR/payload/$abot_ims_basic_package_name" ]]; then
+    wget $abot_ims_basic_url/$abot_ims_basic_package_name -O $CHARM_DIR/payload/$abot_ims_basic_package_name
+fi
 
 #Install the package using dpkg
-dpkg --install  $abot_ims_basic_package_name
+dpkg --install $CHARM_DIR/payload/$abot_ims_basic_package_name
 juju-log "Install abot package completed ..."
 
 
@@ -57,7 +59,11 @@ juju-log "SIPP installation done."
 juju-log "Downloading Sipp"
 
 cd /home/ubuntu
-wget $sipp_url
+if [[ -f $CHARM_DIR/payload/sip-3.3.tar.gz ]]; then
+    cp $CHARM_DIR/payload/sip-3.3.tar.gz /home/ubuntu
+else
+    wget $sipp_url
+fi
 
 tar -xvzf sipp-3.3.tar.gz
 
@@ -101,7 +107,7 @@ ln -s $CHARM_DIR/lib/config $DIR/config
 ln -s $CHARM_DIR/lib/jar $DIR/jar
 ln -s $CHARM_DIR/lib/scenarios $DIR/scenarios
 
-#Change permissions of the charm/lib folders 
+#Change permissions of the charm/lib folders
 chown -R ubuntu:ubuntu $CHARM_DIR/lib
 
 mkdir -p $DIR/tags
