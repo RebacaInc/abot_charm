@@ -26,6 +26,7 @@ iter_start=0
 total_timeout=`action-get timeout-in-minutes`
 sleep_for_completion=30
 
+
 system_kpi()
 {
       echo "System_KPI $1 $(date)###################" >> ~/systemkpi.log
@@ -69,6 +70,8 @@ juju-log "PACKET_CAPTURE_ENABLE=$PACKET_CAPTURE_ENABLE"
 
 
 kill_running_processes
+
+./actions/configure-hss-client cache
 
 sed -e "s/USER_RANGE_START/$user_range_start/g" -e "s/USER_RANGE_END/$user_range_end/g"  <$featurefile_dir/001-clearwater-ims-bulk-user-add.feature.template>$featurefile_dir/001-clearwater-ims-bulk-user-add.feature
 

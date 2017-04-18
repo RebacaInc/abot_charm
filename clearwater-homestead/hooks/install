@@ -32,6 +32,8 @@ done
 # Install the node
 chef-solo -c /home/ubuntu/chef-solo/solo.rb -j /home/ubuntu/chef-solo/node.json
 
+pip install service_identity
+
 # Expose the correct ports
 open-port 22/tcp
 open-port 123/udp

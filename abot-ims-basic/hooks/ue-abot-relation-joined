@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -e
+
+ims_cscf_zone=$(relation-get public-address)
+if [ -z "$ims_cscf_zone" ]; then
+  juju-log "No data sent yet from Cscf"
+  exit 0
+fi
+
+if [  -f /home/ubuntu/.ssh/id_rsa.pub ];
+   then
+      ssh_key=`cat /home/ubuntu/.ssh/id_rsa.pub`
+      ssh_key=`echo "$ssh_key" | sed 's/\r//'`
+      relation-set ssh-key="$ssh_key"
+      juju-log "SSH KEY of ABot-ims-basic $ssh-key"
+fi
+

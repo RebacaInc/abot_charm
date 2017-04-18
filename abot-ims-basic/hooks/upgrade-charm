@@ -71,6 +71,14 @@ ln -s $CHARM_DIR/lib/jar $DIR/jar
 ln -s $CHARM_DIR/lib/scenarios $DIR/scenarios
 
 
+if [ ! -f ~/.ssh/id_rsa.pub ];
+   then
+      ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+      pub_key=`cat ~/.ssh/id_rsa.pub`
+      echo "$pub_key" | sed 's/\r//' >> ~/.ssh/authorized_keys
+
+fi
+
 #Change permissions of charm/lib folder
 chown -R ubuntu:ubuntu $CHARM_DIR/lib
 

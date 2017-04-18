@@ -1,0 +1,16 @@
+#!/bin/bash
+set -e
+
+dns_ip=$(relation-get private-address)
+if [ -z "$dns_ip" ]; then
+  juju-log "No data sent yet from DNS"
+  exit 0
+fi
+
+if [  -f /home/ubuntu/.ssh/id_rsa.pub ];
+   then
+      ssh_key=`cat /home/ubuntu/.ssh/id_rsa.pub`
+      ssh_key=`echo "$ssh_key" | sed 's/\r//'`
+      relation-set ssh-key="$ssh_key"
+fi
+

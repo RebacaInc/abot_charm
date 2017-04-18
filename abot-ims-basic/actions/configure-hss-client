@@ -3,9 +3,17 @@ set -e
 
 juju-log "Configuring Cx client"
 
-AUTH_TYPE=$(action-get auth-type)
+#AUTH_TYPE=$(action-get auth-type)
 
-CX_CLIENT_IP=`grep "HSS_MIRROR.Host.IPAddress" $CHARM_DIR/lib/config/config.properties | cut -d= -f2`
+if [ "$#" -eq  "0" ]; then
+   AUTH_TYPE=$(action-get auth-type)
+else
+   AUTH_TYPE="$1"
+   juju-log " AUTH_TYPE = $1"
+fi
+
+
+CX_CLIENT_IP=`grep "^HSS_MIRROR.Host.IPAddress" $CHARM_DIR/lib/config/config.properties | cut -d= -f2`
 if [ -z "$CX_CLIENT_IP" ]; then
   juju-log "HSS hostname not found - exiting"
   exit 0
@@ -13,7 +21,7 @@ fi
 
 juju-log "CX_CLIENT_IP=$CX_CLIENT_IP"
 
-ABOT_IP=`grep "ABOT.Host.IPAddress=" $CHARM_DIR/lib/config/config.properties | cut -d= -f2`
+ABOT_IP=`grep "^ABOT.Host.IPAddress=" $CHARM_DIR/lib/config/config.properties | cut -d= -f2`
 juju-log "ABOT_IP=$ABOT_IP"
 
 CX_CONFIGURATION_SCRIPT=configure_is_cscf

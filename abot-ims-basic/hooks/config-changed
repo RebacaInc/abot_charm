@@ -1,9 +1,12 @@
 #!/bin/bash
 # config-changed occurs everytime a new configuration value is updated (juju set)
-set -e
+set -ex
 
 DIR=/etc/rebaca-test-suite
 TAG_DIR=/etc/rebaca-test-suite/tags
+MAVEN_USER_DIR=/root/.m2
+PROXY_ADDRESS=`echo $http_proxy | cut -d'/' -f3 | cut -d':' -f2`
+PROXY_PORT=`echo $http_proxy | cut -d'/' -f3 | cut -d':' -f1`
 
 #rm -f $DIR/tags
 tags=$(config-get tags)
@@ -92,6 +95,28 @@ fi
 cd $DIR/featureFiles
 DOMAIN_NAME="$diameter_origin_realm"
 grep -rl rebaca.local . | xargs sed -i "s|rebaca\.local|${DOMAIN_NAME}|g"
+
+#Configure MAVEN proxy
+if [  -z $http_proxy ];then
+   juju-log "No proxy found"
+else
+    cat <<EOT > /root/.m2/settings.xml
+<settings>
+<proxies>
+   <proxy>
+      <id>optional</id>
+      <active>true</active>
+      <protocol>http</protocol>
+      <username>proxyuser</username>
+      <password>proxypass</password>
+      <host>$PROXY_ADDRESS</host>
+      <port>$PROXY_PORT</port>
+      <nonProxyHosts>local.net|some.host.com</nonProxyHosts>
+    </proxy>
+</proxies>
+</settings>
+EOT
+fi
 
 cd $CHARM_DIR
 

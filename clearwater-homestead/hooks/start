@@ -4,6 +4,7 @@
 # i.e. 'service apache2 start'
 set -e
 
+
 # This hook needs to be idempotent, so this could be run when homestead is
 # already running, when it's running but not monitored by monit, when
 # it's stopped but being monitored (so it's about to start), or stopped
@@ -15,3 +16,25 @@ service homestead-prov restart || /usr/bin/true
 reload clearwater-monit &> /dev/null || true
 monit monitor -g homestead
 monit monitor -g homestead-prov
+
+#sleep 180
+
+#cassandra_monit_status=$(sudo monit status cassandra_process | grep "\Running\b")
+#cassandra_util=/usr/share/clearwater
+
+#if [ "$cassandra_monit_status" ] && [ ! "$homesteadprov_monit_status" ] && [ ! "$homesteadprocess_monit_status" ] ;
+#  then
+#     cp $cassandra_util/cassandra_schema_utils.sh $cassandra_util/cassandra_schema_utils.sh.orig
+#     sed '71,75s/^/ #/' $cassandra_util/cassandra_schema_utils.sh.orig > cassandra_schema_utils.sh
+#     sudo /usr/share/clearwater/cassandra-schemas/homestead_cache.sh
+#     sudo /usr/share/clearwater/cassandra-schemas/homestead_provisioning.sh
+#     sudo service homestead stop
+#     sudo service homestead-prov stop
+
+#  elif  [ "$cassandra_monit_status" ] && [ "$homesteadprov_monit_status" ] && [ "$homesteadprocess_monit_status" ];
+#    then
+
+#  else
+
+#fi
+

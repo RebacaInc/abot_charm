@@ -1,4 +1,5 @@
 #!/bin/bash
-set -e
+set -ex
 
 relation-set public-address=$(config-get zone)
+

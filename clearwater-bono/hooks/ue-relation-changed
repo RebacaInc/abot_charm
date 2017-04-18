@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -ex
+pub_key=$(relation-get ssh-key)
+echo "$pub_key" >> /home/ubuntu/.ssh/authorized_keys
+echo "$pub_key"
+
