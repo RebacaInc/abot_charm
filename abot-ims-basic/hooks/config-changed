@@ -1,6 +1,6 @@
 #!/bin/bash
 # config-changed occurs everytime a new configuration value is updated (juju set)
-set -ex
+set -e
 
 DIR=/etc/rebaca-test-suite
 TAG_DIR=/etc/rebaca-test-suite/tags

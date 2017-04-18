@@ -1,5 +1,5 @@
 #!/bin/bash
-set -ex
+set -e
 DIR=/etc/rebaca-test-suite
 
 juju-log "Invoking cscf-relation"

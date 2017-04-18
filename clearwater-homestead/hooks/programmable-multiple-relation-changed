@@ -1,5 +1,5 @@
 #!/bin/bash
-set -ex
+set -e
 juju-log "Invoking dns-relation"
 
 dns_ip=$(relation-get private-address)
