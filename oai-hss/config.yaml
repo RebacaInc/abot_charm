@@ -23,3 +23,8 @@ options:
      description: |
        Random key flag for hss.
      type: string
+   imsi:
+     default: "208930100001111"
+     description: |
+       imsi key for hss
+     type: string

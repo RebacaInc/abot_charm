@@ -1,0 +1,10 @@
+#!/bin/bash
+
+juju-log "Removing relation with epc"
+
+sed -i "s/ABOT.ENB.mobile_country_code=[^ ]*/ABOT.ENB.mobile_country_code=/" $CHARM_DIR/lib/config/config.properties
+sed -i "s/ABOT.ENB.mobile_network_code=[^ ]*/ABOT.ENB.mobile_network_code=/" $CHARM_DIR/lib/config/config.properties
+sed -i "s/ABOT.ENB.mme_ip_address_ipv4=[^ ]*/ABOT.ENB.mme_ip_address_ipv4=192.168.255.255/" $CHARM_DIR/lib/config/config.properties
+sed -i "s/MME.Host.IPAddress=[^ ]*/MME.Host.IPAddress=192.168.255.255/" $CHARM_DIR/lib/config/config.properties
+
+status-set blocked "Abot blocked! Waiting for epc relation"

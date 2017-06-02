@@ -15,8 +15,9 @@ subordinate: false
 provides:
   hss:
     interface: S6a-hss
+  opc:
+    interface: opc-key
 requires:
   db:
     interface: mysql
-
 

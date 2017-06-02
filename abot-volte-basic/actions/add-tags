@@ -1,0 +1,55 @@
+#!/bin/bash
+# Action -Add Tags
+set -eu
+DIR=/etc/rebaca-test-suite/tags
+
+# Add tags specified by TAG_NAMES to the file specified by TAG_FILE_NAME
+function add_tags_to_file()
+{
+  #Initialize new_tags variable with blank value.
+  new_tags=
+  
+  if [ -f $DIR/$TAG_FILE_NAME ]; then
+    new_tags=`cat $DIR/$TAG_FILE_NAME`
+  fi
+  
+  if [ -z "$TAG_NAMES" ]; then
+    juju-log "No tag names specified - none added"
+  else
+    juju-log "Tag names to be added: $TAG_NAMES"
+  
+    #Split the tags and add the @ symbols
+    IFS=', ' read -r -a array <<< "$TAG_NAMES"  
+    for index in "${!array[@]}"
+    do
+      if [ -z "$new_tags" ]; then
+        new_tags="@${array[index]}"
+      else
+        #Add current tag only if not duplicate
+        current_tag="${array[index]}"
+        if [ `echo $new_tags | grep -c $current_tag` -eq 0 ]; then
+          new_tags="$new_tags,@$current_tag"
+        fi
+      fi
+    done
+  
+    #Add to new file if filename defined
+    echo -n "$new_tags" > $DIR/$TAG_FILE_NAME
+  
+    juju-log "Filename:$TAG_FILE_NAME,  Tags:$new_tags"
+  fi
+} 
+
+TAG_NAMES=$(action-get tagnames)
+TAG_FILE_NAME=$(action-get filename)
+
+if [ ! -z "$TAG_FILE_NAME" ]; then
+  juju-log "Tag file specified: $TAG_FILE_NAME"
+else
+  #Assign default file name
+  TAG_FILE_NAME=tags
+fi
+status-set active  "Executing - Adding Tags"
+add_tags_to_file
+status-set active  "Ready"
+

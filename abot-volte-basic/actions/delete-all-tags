@@ -1,0 +1,26 @@
+#!/bin/bash
+# Action -Delete all tags
+set -e
+DIR=/etc/rebaca-test-suite/tags
+
+# Delete multiple tags from a given file
+function delete_all_tags_from_file()
+{
+  FILE_NAME=$1
+  
+  #Delete the specified file
+  rm -f $DIR/$FILE_NAME
+  juju-log "Cleared all tags from file: $FILE_NAME"
+} 
+
+
+TAG_FILE_NAME=$(action-get filename)
+
+if [ ! -z "$TAG_FILE_NAME" ]; then
+  juju-log "Tag file specified: $TAG_FILE_NAME"
+else
+  #Assign default file name
+  TAG_FILE_NAME=tags
+fi
+
+delete_all_tags_from_file $TAG_FILE_NAME

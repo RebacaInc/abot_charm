@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+
+import amulet
+import requests
+import unittest
+
+
+class TestAbotimsbasicDeployment(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.deployment = amulet.Deployment(series='trusty')
+        cls.deployment.add('abot-ims-basic', charm='~debayan-ch/trusty/abot-ims-basic-33')
+        cls.deployment.configure('abot-ims-basic', {'clearwater_sipp_ip' : '172.16.255.255'})
+
+        try:
+            cls.deployment.setup(timeout=9000)
+            cls.deployment.sentry.wait()
+        except amulet.helpers.TimeoutError:
+            amulet.raise_status(amulet.SKIP, msg="Environment wasn't stood up in time")
+        except:
+            raise
+
+    def test_homepage(self):
+        # Now you can use self.deployment.sentry.unit[UNIT] to address each of
+        # the units and perform more in-depth steps.  You can also reference
+        # the first unit as self.unit.
+        # There are three test statuses that can be triggered with
+        # amulet.raise_status():
+        #   - amulet.PASS
+        #   - amulet.FAIL
+        #   - amulet.SKIP
+        # Each unit has the following methods:
+        #   - .info - An array of the information of that unit from Juju
+        #   - .file(PATH) - Get the details of a file on that unit
+        #   - .file_contents(PATH) - Get plain text output of PATH file from that unit
+        #   - .directory(PATH) - Get details of directory
+        #   - .directory_contents(PATH) - List files and folders in PATH on that unit
+        #   - .relation(relation, service:rel) - Get relation data from return service
+        #          add tests here to confirm service is up and working properly
+        # For example, to confirm that it has a functioning HTTP server:
+        #     page = requests.get('http://{}'.format(self.unit.info['public-address']))
+        #     page.raise_for_status()
+        # More information on writing Amulet tests can be found at:
+        #     https://jujucharms.com/docs/stable/tools-amulet
+        # Abot-ims-basic sentry unit
+        abotimsbasic_unit = self.deployment.sentry['abot-ims-basic'] [0]
+        # Abot-ims-basic home page URL
+        abotimsbasic_url = 'http://{public-address}'.format(**abotimsbasic_unit.info)
+        # Request for home page of abot ims basic
+        homepage = requests.get(abotimsbasic_url)
+        # Status of Homepage 
+        homepage.raise_for_status()
+        pass
+    def test_config(self):
+        #Deployment sentry for Abot-ims-basic
+        abotimsbasic_unit = self.deployment.sentry['abot-ims-basic'] [0]
+        #SIP server config file
+        sip_ip_config = abotimsbasic_unit.file_contents('/etc/rebaca-test-suite/clearwater_sipp_ip')
+        #Verify SIP server name with
+        sip_ip_content = "172.16.255.255"
+        #Asssertion for verification
+        self.assertTrue(sip_ip_content in sip_ip_config)
+
+    def test_action_add_tags(self):
+        #abot_unit = self.deployment.sentry['abot'] [0]
+        abotimsbasic_unit = self.deployment.sentry['abot-ims-basic'] [0]
+        #Add tags using action command
+        abotimsbasic_unit.run_action('add-tags',{'tagnames' : 'sip-subscribe-notify'})
+        # Tag addition verification
+        tag_file_content =  abotimsbasic_unit.file_contents('/etc/rebaca-test-suite/tags/tags')
+        # Verify tag name with
+        tag_name = 'sip-subscribe-notify'
+        #
+        self.deployment.sentry.wait_for_messages({'abot-ims-basic':'Ready'}, timeout=300)
+        # Asssertion for verification
+        self.assertTrue(tag_name in tag_file_content)
+        pass
+
+    def test_action_run(self):
+        #Sentry for Abot-ims-basic unit
+        abotimsbasic_unit = self.deployment.sentry['abot-ims-basic'] [0]
+        #Run the action hook of list-tags
+        abotimsbasic_unit.run_action('run', {'tagnames' : 'local-commands'})
+        #Wait for time to complete run action
+        self.deployment.sentry.wait_for_messages({'abot-ims-basic':'Ready'}, timeout=300)
+        # Check the file statistics to check successful execution of run action
+        abotimsbasic_unit.file_stat('lib/testReports/report-*/*local-commands*.html')
+        #Raise status on status of action_check
+        pass
+
+
+#if __name__ == '__main__':
+#    unittest.main()
+suite = unittest.TestLoader().loadTestsFromTestCase(TestAbotimsbasicDeployment)
+unittest.TextTestRunner(verbosity=2).run(suite)

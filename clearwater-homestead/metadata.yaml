@@ -11,6 +11,8 @@ requires:
     optional: true
   programmable-multiple:
     interface: dns-multi
+  ssh-abot-volte-homestead:
+    interface: ssh
 provides:
   homestead-cscf:
     interface: homestead-hss-interface

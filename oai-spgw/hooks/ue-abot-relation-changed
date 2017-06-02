@@ -1,0 +1,45 @@
+#!/bin/bash
+#set -ex
+DIR=/etc/hosts
+
+juju-log "Invoking cscf-relation"
+ims_cscf_zone=$(relation-get public-address)
+gateway_iface_id=`ip -o -4 route show to default | awk '{print $5}'`
+tunnel_net=`config-get ipv4_list_start`
+
+if [ -z "$ims_cscf_zone" ]; then
+  juju-log "No data sent yet from Cscf"
+  exit 0
+fi
+sgw_eth=$(config-get sgw-eth)
+
+ims_cscf_hostname=$(dig +short _sip._tcp.$ims_cscf_zone SRV | awk '{print $4}' | sed 's/.$//')
+
+juju-log "CSFP FQDN  $ims_cscf_hostname"
+
+ims_cscf_ip=`dig +short $ims_cscf_hostname`
+
+
+if [ "$(grep  $ims_cscf_hostname /etc/hosts | cut -f2 -d' ')" = $ims_cscf_hostname ]
+  then
+   line_num=`grep  -n $ims_cscf_hostname /etc/hosts | cut -f1 -d:`
+   sed -i "${ine_num}d" /etc/hosts
+   echo "$ims_cscf_ip $ims_cscf_hostname" >> $DIR
+ else 
+   echo "$ims_cscf_ip $ims_cscf_hostname" >> $DIR
+fi
+
+#verify_masqurade_net=`sudo iptables -L -t nat --line-numbers | grep -e "MASQUERADE.*172.16.0.0/12" | cut -f11 -d' '`
+
+#if [ "$verify_masqurade_net" = "$tunnel_net" ]
+# then
+#   echo $verify_masqurade_net
+#   masq_rule_num=`sudo iptables -L -t nat --line-numbers | grep -e "MASQUERADE.*172.16.0.0/16" | cut -f1 -d' '`
+#   iptables -t nat -D POSTROUTING $masq_rule_num
+#fi
+
+for i in $( iptables -L -t nat --line-numbers | grep -e "MASQUERADE.*$tunnel_net" | grep ^[0-9] | awk '{ print $1 }' | tac ); 
+  do iptables -t nat -D POSTROUTING $i; 
+done
+
+sudo iptables -t nat -A POSTROUTING -s $tunnel_net -o $gateway_iface_id -j MASQUERADE
