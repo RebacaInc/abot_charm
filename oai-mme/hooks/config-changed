@@ -77,7 +77,7 @@ local_private_iface=$(ifconfig | grep -B1 "inet addr:$local_ip" | awk '$1!="inet
 
 gateway_iface_id=`ip -o -4 route show to default | awk '{print $5}'`
 
-if [[ $gateway_iface_id == $sgw_iface ]];then
+if [[ $gateway_iface_id == $iface ]];then
    iface_verify=`ifconfig $iface | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
    if [ -z $iface_verify ]; then
       br_check=`ifconfig br-eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`;
