@@ -62,6 +62,18 @@ fi
     fi
 #fi
 
+UNHEXKEY=`grep "$imsi_val" /srv/.out | grep 'UNHEX' | cut -d "'" -f2`
+
+if [ "$UNHEXKEY" == "" ] ; then
+
+  juju-log "No OPC key found , Check db relation eastablished or not"
+
+else
+
+  relation-set opc-key=$UNHEXKEY
+
+fi
+
 relation-set trigger_restart=0
 relation-set mme_in_db=no
 
