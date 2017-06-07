@@ -151,7 +151,9 @@ configure_mme(){
   # copy config templates
   mkdir -p $mme_conf_path
   cp $openair_path/ETC/mme.conf $mme_conf_path/mme.conf
-  cp $openair_path/ETC/mme_fd.conf $freediameter_conf_path/mme_fd.conf
+  #cp $openair_path/ETC/mme_fd.conf $freediameter_conf_path/mme_fd.conf
+  cp $CHARM_DIR/files/mme_fd.conf $freediameter_conf_path/mme_fd.conf
+  
 
   # generate cert
   fqdn=`hostname --fqdn`
