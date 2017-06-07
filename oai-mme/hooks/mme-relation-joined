@@ -65,7 +65,7 @@ fi
 
 if [ -f /tmp/opcvalue ];then
 
-  relation-set relation-set opc-key=$(cat /tmp/opcvalue)
+  relation-set  opc-key=$(cat /tmp/opcvalue)
 
 fi
 
