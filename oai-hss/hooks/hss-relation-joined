@@ -62,6 +62,10 @@ fi
     fi
 #fi
 
+juju-log "Setting up opc  info for abot"
+
+imsi_val=`config-get imsi`
+
 UNHEXKEY=`grep "$imsi_val" /srv/.out | grep 'UNHEX' | cut -d "'" -f2`
 
 if [ "$UNHEXKEY" == "" ] ; then
