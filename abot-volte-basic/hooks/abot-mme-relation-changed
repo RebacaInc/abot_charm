@@ -8,11 +8,13 @@ mobile_country_code=`relation-get MCC`
 mobile_network_code=`relation-get MNC`
 mme_ip_address_ipv4=`relation-get mme_ip`
 mme_running=`relation-get mme_running`
+unhex_key=`relation-get opc-key`
 
 sed -i "s/ABOT.ENB.mobile_country_code=[^ ]*/ABOT.ENB.mobile_country_code=$mobile_country_code/" $CHARM_DIR/lib/config/volte_defaults.conf
 sed -i "s/ABOT.ENB.mobile_network_code=[^ ]*/ABOT.ENB.mobile_network_code=$mobile_network_code/" $CHARM_DIR/lib/config/volte_defaults.conf
 sed -i "s/ABOT.ENB.mme_ip_address_ipv4=[^ ]*/ABOT.ENB.mme_ip_address_ipv4=$mme_ip_address_ipv4/" $CHARM_DIR/lib/config/volte_defaults.conf
 sed -i "s/MME.Host.IPAddress=[^ ]*/MME.Host.IPAddress=$mme_ip_address_ipv4/" $CHARM_DIR/lib/config/config.properties
+sed -i -e "s/OPC=\".*\";/OPC=\"$unhex_key\";/" /srv/openair5G/openair3/NAS/TOOLS/ue_eurecom_test_sfr.conf
 
 if [ "$mme_running" == "yes" ]; then
     status-set active "Abot ready! MME relation established, proceed to run tests..."
