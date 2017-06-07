@@ -63,6 +63,11 @@ else
     relation-set mme_ip=$validated_mme_public_ip
 fi 
 
+if [ -f /tmp/opcvalue ];then
+
+  relation-set relation-set opc-key=$(cat /tmp/opcvalue)
+
+fi
 
 relation-set mme_running=no
 #we say a priori that mme is not running just to force
