@@ -32,5 +32,6 @@ fi
 
 #Update HSS Mirror IP
 echo -n "$ims_hss_mirror_ip" > $DIR/ims_hss_mirror_ip
+echo -n "$ims_hss_mirror_ip" > /root/.ims_hss_mirror_ip
 
 sed -i "s/HSS_MIRROR.Host.IPAddress=[^ ]*/HSS_MIRROR.Host.IPAddress=$ims_hss_mirror_ip/" $CHARM_DIR/lib/config/config.properties
