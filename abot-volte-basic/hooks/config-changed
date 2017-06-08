@@ -52,6 +52,14 @@ if [ ! -z `cat /root/.spgw_ip_address_ipv4` ]; then
      sed -i "s/SPGW.Host.IPAddress=[^ ]*/SPGW.Host.IPAddress=$spgw_ip_address_ipv4/" $CHARM_DIR/lib/config/config.properties 
 fi
 
+if [ ! -f /root/.ims_hss_mirror_ip ];then
+    touch /root/.ims_hss_mirror_ip
+fi
+
+if [ ! -z `cat /root/.ims_hss_mirror_ip` ]; then
+   ims_hss_mirror_ip=`cat /root/.ims_hss_mirror_ip`
+   sed -i "s/HSS_MIRROR.Host.IPAddress=[^ ]*/HSS_MIRROR.Host.IPAddress=$ims_hss_mirror_ip/" $CHARM_DIR/lib/config/config.properties
+fi
 
 private_address=$(unit-get private-address)
 if [[ `dig +short $private_address` =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]
