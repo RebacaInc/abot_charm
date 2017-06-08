@@ -19,7 +19,6 @@ requires:
     interface: homestead-prov-interface
   abot-mme:
     interface: S1-C
-
 provides:
   hss-abot:
     interface: 3GPP-Cx

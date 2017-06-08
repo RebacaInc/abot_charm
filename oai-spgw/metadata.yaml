@@ -21,4 +21,6 @@ requires:
     interface: 3GPP-Gm
   programmable-multiple:
     interface: dns-multi
+  ssh-abot-spgw:
+    interface: ssh
 

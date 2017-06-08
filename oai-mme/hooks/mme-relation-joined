@@ -48,6 +48,13 @@ mme_iface=`config-get eth`
 local_ip=$(unit-get private-address)
 local_private_iface=$(ifconfig | grep -B1 "inet addr:$local_ip" | awk '$1!="inet" && $1!="--" {print $1}')
 
+
+if [ ! -f $CHARM_DIR/.spgw_s11_ipv4 ];then
+    juju-log "SPGW and MME relation not found"
+    exit 0
+fi
+    
+
 if ! ifconfig | grep $mme_iface;then
      mme_iface=$local_private_iface
 fi
@@ -65,8 +72,12 @@ fi
 
 if [ -f /tmp/opcvalue ];then
 
-  relation-set  opc-key=$(cat /tmp/opcvalue)
+  relation-set opc-key=$(cat /tmp/opcvalue)
 
+fi
+
+if [  -f $CHARM_DIR/.spgw_s11_ipv4 ];then
+    relation-set spgw_ip_address_ipv4=`cat $CHARM_DIR/.spgw_s11_ipv4`
 fi
 
 relation-set mme_running=no

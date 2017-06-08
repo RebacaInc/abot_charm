@@ -25,19 +25,33 @@ if [ ! -z $diameter_origin_realm ]; then
 fi
 
 ims_apn_host=$(config-get ims_apn_host)
-
 tac=$(config-get tac)
 mobile_country_code=$(config-get mcc)
 mobile_network_code=$(config-get mnc)
-mme_ip_address_ipv4=$(config-get mme_ip)
-spgw_ip_address_ipv4=$(config-get spgw_ip)
 
 sed -i "s/ABOT.ENB.mobile_country_code=[^ ]*/ABOT.ENB.mobile_country_code=$mobile_country_code/" $CHARM_DIR/lib/config/volte_defaults.conf
 sed -i "s/ABOT.ENB.mobile_network_code=[^ ]*/ABOT.ENB.mobile_network_code=$mobile_network_code/" $CHARM_DIR/lib/config/volte_defaults.conf
-sed -i "s/ABOT.ENB.mme_ip_address_ipv4=[^ ]*/ABOT.ENB.mme_ip_address_ipv4=$mme_ip_address_ipv4/" $CHARM_DIR/lib/config/volte_defaults.conf
-sed -i "s/MME.Host.IPAddress=[^ ]*/MME.Host.IPAddress=$mme_ip_address_ipv4/" $CHARM_DIR/lib/config/config.properties
-sed -i "s/SPGW.Host.IPAddress=[^ ]*/SPGW.Host.IPAddress=$spgw_ip_address_ipv4/" $CHARM_DIR/lib/config/config.properties
 sed -i "s/ABOT.ENB.tracking_area_code=[^ ]*/ABOT.ENB.tracking_area_code=$tac/" $CHARM_DIR/lib/config/volte_defaults.conf
+
+if [ ! -f /root/.mme_ip_address_ipv4 ];then
+    touch /root/.mme_ip_address_ipv4
+fi
+if [ ! -z `cat /root/.mme_ip_address_ipv4` ]; then
+     mme_ip_address_ipv4=`cat /root/.mme_ip_address_ipv4`
+     sed -i "s/MME.Host.IPAddress=[^ ]*/MME.Host.IPAddress=$mme_ip_address_ipv4/" $CHARM_DIR/lib/config/config.properties
+     sed -i "s/ABOT.ENB.mme_ip_address_ipv4=[^ ]*/ABOT.ENB.mme_ip_address_ipv4=$mme_ip_address_ipv4/" $CHARM_DIR/lib/config/volte_defaults.conf  
+fi
+
+
+if [ ! -f /root/.spgw_ip_address_ipv4 ];then
+    touch /root/.spgw_ip_address_ipv4
+fi
+
+if [ ! -z `cat /root/.spgw_ip_address_ipv4` ]; then
+     spgw_ip_address_ipv4=`cat /root/.spgw_ip_address_ipv4`
+     sed -i "s/SPGW.Host.IPAddress=[^ ]*/SPGW.Host.IPAddress=$spgw_ip_address_ipv4/" $CHARM_DIR/lib/config/config.properties 
+fi
+
 
 private_address=$(unit-get private-address)
 if [[ `dig +short $private_address` =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]
@@ -83,4 +97,3 @@ chmod +x $DIR/bin/sip_imsi_domain
 
 sed -i "/ip=/s/[^ ]*/ip=$ue_ip/" $DIR/bin/sip-stress
 chmod +x $DIR/bin/sip-stress
-
