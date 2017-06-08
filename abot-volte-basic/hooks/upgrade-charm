@@ -49,7 +49,7 @@ chown -R ubuntu:ubuntu $CHARM_DIR/lib
 
 #Build the oaisim
 juju-log "Build oaisim..."
-(cd /srv/openair5G/cmake_targets; ./build_oai_rebaca -c -I --oaisim) || true
+(cd /srv/openair5G/cmake_targets; sudo ./build_oai_rebaca -c -I --oaisim) || true
 
 #Change permissions of the openair5G folders
 chown -R ubuntu:ubuntu /srv
