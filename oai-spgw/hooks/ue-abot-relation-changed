@@ -29,17 +29,4 @@ if [ "$(grep  $ims_cscf_hostname /etc/hosts | cut -f2 -d' ')" = $ims_cscf_hostna
    echo "$ims_cscf_ip $ims_cscf_hostname" >> $DIR
 fi
 
-#verify_masqurade_net=`sudo iptables -L -t nat --line-numbers | grep -e "MASQUERADE.*172.16.0.0/12" | cut -f11 -d' '`
 
-#if [ "$verify_masqurade_net" = "$tunnel_net" ]
-# then
-#   echo $verify_masqurade_net
-#   masq_rule_num=`sudo iptables -L -t nat --line-numbers | grep -e "MASQUERADE.*172.16.0.0/16" | cut -f1 -d' '`
-#   iptables -t nat -D POSTROUTING $masq_rule_num
-#fi
-
-for i in $( iptables -L -t nat --line-numbers | grep -e "MASQUERADE.*$tunnel_net" | grep ^[0-9] | awk '{ print $1 }' | tac ); 
-  do iptables -t nat -D POSTROUTING $i; 
-done
-
-sudo iptables -t nat -A POSTROUTING -s $tunnel_net -o $gateway_iface_id -j MASQUERADE

@@ -19,14 +19,6 @@ options:
     default: "93"
     description: "The default broadcast PLMN MCC"
     type: string
-  mme_ip:
-    default: "192.168.40.105"
-    description: "The MME IP Address"
-    type: string
-  spgw_ip:
-    default: "192.168.40.106"
-    description: "The SPGW IP Address"
-    type: string
   ue_ip:
     default: "172.16.0.2"
     description: "The SPGW IP Address"
@@ -37,7 +29,7 @@ options:
     description: "Tag for the feature file to run"
   abot_volte_basic_repo_url:
     type: string
-    default: "http://115.113.43.202:8080/rebaca"
+    default: "http://115.113.43.202:8090/rebaca"
     description: "URL of abot-volte-basic repo "
   sipp_repo_url:
     type: string
