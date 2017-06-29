@@ -16,9 +16,9 @@ search_and_replace()
 
     OLD_RHS=`echo ${WORDSARR[1]} | tr -d '"' | tr -d ';'`
 
-    #echo "OLD_RHS :"$OLD_RHS"----RHS :"$RHS"----LHS  :"$LHS
+    #echo "OLD_RHS:"$OLD_RHS"; RHS:"$RHS"; LHS:"$LHS
 
-    sed -i -e "s?\(\s*{*\)\(${LHS}\)\(\s*= *\)\(\"*\)\(${OLD_RHS}\)\(\"*\)\(;\)?\1\2\3\4${RHS}\6\7?g" $ENBCONFIGFILE
+    sed -i -e "s?\(\s*{*\)\(${LHS}\)\(\s*= *\)\(\"\{0,1\}\)\(${OLD_RHS}\)\(\"\{0,1\}\)\(;\)?\1\2\3\4${RHS}\6\7?g" $ENBCONFIGFILE
 }
 
 

@@ -4,7 +4,7 @@ set -eux
 
 juju-log "Setting EPC charm relation variables"
 relation-set TAC=1
-sed -i "s/ABOT.ENB.tracking_area_code=[^ ]*/ABOT.ENB.tracking_area_code=1/" $CHARM_DIR/lib/config/config.properties
+sed -i "s/ABOT.ENB.tracking_area_code=[^ ]*/ABOT.ENB.tracking_area_code=1/" $CHARM_DIR/lib/config/ABotConfig.properties
 
 ip rule add from 172.16.0.2/32 table 200
 ip rule add to 172.16.0.2/32 table 200

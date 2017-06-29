@@ -37,7 +37,7 @@ options:
     description: "URL of sipp repo"
   abot_volte_basic_package:
     type: string
-    default: "abot-volte-basic_1.0.0_all.deb"
+    default: "abot-volte-basic_3.0.0_all.deb"
     description: "The ABot VoLTE Basic package"
   zone:
     default: "rebaca.local"

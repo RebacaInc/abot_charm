@@ -18,10 +18,10 @@ if [ -n $TAG_DIR/tags ]; then
         echo -n "@$tags" > $TAG_DIR/tags
 fi
 
-ims_apn_domain=$(config-get ims_apn_domain)
+diameter_origin_realm=$(config-get ims_apn_domain)
 if [ ! -z $diameter_origin_realm ]; then
    juju-log "Setting origin realm=$diameter_origin_realm"
-   sed -i "s/ABOT_HSS.OriginRealm=[^ ]*/ABOT_HSS.OriginRealm=$diameter_origin_realm/" $CHARM_DIR/lib/config/config.properties
+   sed -i "s/ABOT_HSS.OriginRealm=[^ ]*/ABOT_HSS.OriginRealm=$diameter_origin_realm/" $CHARM_DIR/lib/config/ABotConfig.properties
 fi
 
 ims_apn_host=$(config-get ims_apn_host)
@@ -38,7 +38,7 @@ if [ ! -f /root/.mme_ip_address_ipv4 ];then
 fi
 if [ ! -z `cat /root/.mme_ip_address_ipv4` ]; then
      mme_ip_address_ipv4=`cat /root/.mme_ip_address_ipv4`
-     sed -i "s/MME.Host.IPAddress=[^ ]*/MME.Host.IPAddress=$mme_ip_address_ipv4/" $CHARM_DIR/lib/config/config.properties
+     sed -i "s/MME.SecureShell.IPAddress=[^ ]*/MME.SecureShell.IPAddress=$mme_ip_address_ipv4/" $CHARM_DIR/lib/config/ABotConfig.properties
      sed -i "s/ABOT.ENB.mme_ip_address_ipv4=[^ ]*/ABOT.ENB.mme_ip_address_ipv4=$mme_ip_address_ipv4/" $CHARM_DIR/lib/config/volte_defaults.conf  
 fi
 
@@ -49,7 +49,7 @@ fi
 
 if [ ! -z `cat /root/.spgw_ip_address_ipv4` ]; then
      spgw_ip_address_ipv4=`cat /root/.spgw_ip_address_ipv4`
-     sed -i "s/SPGW.Host.IPAddress=[^ ]*/SPGW.Host.IPAddress=$spgw_ip_address_ipv4/" $CHARM_DIR/lib/config/config.properties 
+     sed -i "s/SPGW.SecureShell.IPAddress=[^ ]*/SPGW.SecureShell.IPAddress=$spgw_ip_address_ipv4/" $CHARM_DIR/lib/config/ABotConfig.properties 
 fi
 
 if [ ! -f /root/.ims_hss_mirror_ip ];then
@@ -58,7 +58,16 @@ fi
 
 if [ ! -z `cat /root/.ims_hss_mirror_ip` ]; then
    ims_hss_mirror_ip=`cat /root/.ims_hss_mirror_ip`
-   sed -i "s/HSS_MIRROR.Host.IPAddress=[^ ]*/HSS_MIRROR.Host.IPAddress=$ims_hss_mirror_ip/" $CHARM_DIR/lib/config/config.properties
+   sed -i "s/HSS_MIRROR.SecureShell.IPAddress=[^ ]*/HSS_MIRROR.SecureShell.IPAddress=$ims_hss_mirror_ip/" $CHARM_DIR/lib/config/ABotConfig.properties
+fi
+
+if [ ! -f /root/.opc_val ];then
+    touch /root/.opc_val
+fi
+
+if [ ! -z `cat /root/.opc_val` ]; then
+   opc_val=`cat /root/.opc_val`
+   sed -i -e "s/OPC=\".*\";/OPC=\"$opc_val\";/" /srv/openair5G/openair3/NAS/TOOLS/ue_eurecom_test_sfr.conf
 fi
 
 private_address=$(unit-get private-address)
@@ -77,7 +86,7 @@ fi
 ip=`$DIGSHORT $private_address`
   
 if [ ! -z $ip ]; then
-    sed -i "s/ABOT.Host.IPAddress=[^ ]*/ABOT.Host.IPAddress=$ip/" $CHARM_DIR/lib/config/config.properties
+    sed -i "s/ABOT.SecureShell.IPAddress=[^ ]*/ABOT.SecureShell.IPAddress=$ip/" $CHARM_DIR/lib/config/ABotConfig.properties
     sed -i "s#ABOT.ENB.ENB_IPV4_ADDRESS_FOR_S1_MME=[^ ]*#ABOT.ENB.ENB_IPV4_ADDRESS_FOR_S1_MME=$ip/24#" $CHARM_DIR/lib/config/volte_defaults.conf
     sed -i "s#ABOT.ENB.ENB_IPV4_ADDRESS_FOR_S1U=[^ ]*#ABOT.ENB.ENB_IPV4_ADDRESS_FOR_S1U=$ip/24#" $CHARM_DIR/lib/config/volte_defaults.conf
     sed -i "s/ABOT_IP_ADDRESS/$ip/" $CHARM_DIR/lib/abot/static/js/apps/config/appconfig.js
@@ -89,7 +98,7 @@ fi
 #Replace realm-name in diameter-specific feature files 
 cd $DIR/featureFiles
 DOMAIN_NAME="$ims_apn_domain"
-grep -rl rebaca.local . | xargs sed -i "s|rebaca\.local|${DOMAIN_NAME}|g"
+grep -rl rebaca.local . | xargs sed -i "s|rebaca\.local|${DOMAIN_NAME}|g" || true
 
 echo -n $ims_apn_host > $DIR/sip_server
 echo -n $ims_apn_domain > $DIR/sip_domain
