@@ -16,3 +16,6 @@ subordinate: false
 requires:
   epc:
     interface: S1-C
+provides:
+  ssh-abot:
+    interface: ssh
