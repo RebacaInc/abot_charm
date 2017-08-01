@@ -37,12 +37,12 @@ if [ ! -z "$ABOT_UNITS" ]; then
      #Distribute to current Abot unit
      juju ssh $abot_unit "echo $key >> ~/.ssh/authorized_keys"
 
-     #Distribute to all EPC units
-     #for epc_unit in $EPC_UNITS
-     #do
-     #  echo "Publishing key to $epc_unit"
-     #  juju ssh $epc_unit "echo $key >> ~/.ssh/authorized_keys"
-     #done
+     Distribute to all EPC units
+     for epc_unit in $EPC_UNITS
+     do
+       echo "Publishing key to $epc_unit"
+       juju ssh $epc_unit "echo $key >> ~/.ssh/authorized_keys"
+     done
 
    done #For all abot units
 fi
