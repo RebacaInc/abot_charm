@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+pub_key=$(relation-get ssh-key-abotepc)
+echo "$pub_key" >> ~/.ssh/authorized_keys
+
+sudo -u ubuntu bash << EOF
+echo "$pub_key" >> ~/.ssh/authorized_keys
+EOF
+

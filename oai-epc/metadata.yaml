@@ -19,3 +19,6 @@ provides:
 requires:
   hss:
     interface: S6a-hss
+  ssh-abot-epc:
+    interface: ssh
+

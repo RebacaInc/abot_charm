@@ -4,7 +4,7 @@ generate-ssh_key(){
 
 if [ ! -f /home/ubuntu/.ssh/id_rsa.pub ];
    then
-      ssh-key-abotvoltegen -t rsa -N "" -f /root/.ssh/id_rsa
+      ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
       pub_key=`cat /root/.ssh/id_rsa.pub`
       echo "$pub_key" | sed 's/\r//' >> /root/.ssh/authorized_keys
   else
@@ -15,7 +15,7 @@ fi
 if [ ! -f /home/ubuntu/.ssh/id_rsa.pub ];
    then
     sudo -u ubuntu bash << EOF
-    ssh-key-abotvoltegen -t rsa -N "" -f /home/ubuntu/.ssh/id_rsa
+    ssh-keygen -t rsa -N "" -f /home/ubuntu/.ssh/id_rsa
 EOF
       pub_key=`cat /home/ubuntu/.ssh/id_rsa.pub`
       echo "$pub_key" | sed 's/\r//' >> /home/ubuntu/.ssh/authorized_keys
