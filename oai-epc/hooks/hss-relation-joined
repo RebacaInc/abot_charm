@@ -39,7 +39,7 @@ source $CHARM_DIR/utils/common
 juju-log "Setting up MME relation info for HSS"
 relation-set  mme_hostname=`hostname --fqdn`
 
-ip_address_mme=`unit-get public-address`
+ip_address_mme=`unit-get private-address`
 get_ip_address $ip_address_mme
 status=$?
 if [ "$status" == "1" ] ; then
