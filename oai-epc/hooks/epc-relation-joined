@@ -44,7 +44,7 @@ relation-set MCC=`config-get gummei_tai_mcc`
 relation-set MNC=`config-get gummei_tai_mnc`
 relation-set trigger_restart=0
 
-mme_public_ip=`unit-get public-address`
+mme_public_ip=`unit-get private-address`
 get_ip_address $mme_public_ip
 status=$?
 if [ "$status" == "1" ] ; then
