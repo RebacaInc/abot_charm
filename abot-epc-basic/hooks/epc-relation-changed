@@ -2,20 +2,24 @@
 
 #called on every epc relation change
 
+ABOT_DEPLOY_DIR=/etc/rebaca-test-suite
 set -ex
 
 mobile_country_code=`relation-get MCC`
 mobile_network_code=`relation-get MNC`
 mme_ip_address_ipv4=`relation-get mme_ip`
 epc_running=`relation-get epc_running`
+unhex_key=`relation-get opc-key`
 
-sed -i "s/ABOT.ENB.mobile_country_code=[^ ]*/ABOT.ENB.mobile_country_code=$mobile_country_code/" $CHARM_DIR/lib/config/epc_defaults.conf
-sed -i "s/ABOT.ENB.mobile_network_code=[^ ]*/ABOT.ENB.mobile_network_code=$mobile_network_code/" $CHARM_DIR/lib/config/epc_defaults.conf
-sed -i "s/ABOT.ENB.mme_ip_address_ipv4=[^ ]*/ABOT.ENB.mme_ip_address_ipv4=$mme_ip_address_ipv4/" $CHARM_DIR/lib/config/epc_defaults.conf
-sed -i "s/MME.Host.IPAddress=[^ ]*/MME.Host.IPAddress=$mme_ip_address_ipv4/" $CHARM_DIR/lib/config/config.properties
+
+sed -i "s/ABOT.ENB.mobile_country_code=[^ ]*/ABOT.ENB.mobile_country_code=$mobile_country_code/" ${ABOT_DEPLOY_DIR}/config/abot-epc-basic_defaults.conf
+sed -i "s/ABOT.ENB.mobile_network_code=[^ ]*/ABOT.ENB.mobile_network_code=$mobile_network_code/" ${ABOT_DEPLOY_DIR}/config/abot-epc-basic_defaults.conf
+sed -i "s/ABOT.ENB.mme_ip_address_ipv4=[^ ]*/ABOT.ENB.mme_ip_address_ipv4=$mme_ip_address_ipv4/" ${ABOT_DEPLOY_DIR}/config/abot-epc-basic_defaults.conf
+sed -i "s/MME.SecureShell.IPAddress=[^ ]*/MME.SecureShell.IPAddress=$mme_ip_address_ipv4/" ${ABOT_DEPLOY_DIR}/config/ABotConfig.properties
+sed -i -e "s/OPC=\".*\";/OPC=\"$unhex_key\";/" ${ABOT_DEPLOY_DIR}/oaisim/config/ue_eurecom_test_sfr.conf
 
 if [ "$epc_running" == "yes" ]; then
-    status-set active "Abot ready! EPC relation established, proceed to run tests..."
+    status-set active "ABot ready! EPC relation established, proceed to run tests..."
     exit 0
 fi
-status-set blocked "Abot blocked! EPC relation not established, unable to get to active state"
+status-set blocked "ABot blocked! EPC relation not established, unable to get to active state"

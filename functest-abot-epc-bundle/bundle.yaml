@@ -1,8 +1,8 @@
   services:
     "oai-hss":
-      charm: cs:~abotcharm/trusty/oai-hss
+      charm: /src/epc-test/abot_charm/oai-hss
       num_units: 1
-      constraints: "arch=amd64 ram=2G"
+      constraints: "arch=amd64 mem=2G"
       series: trusty
       options:
         operator-key: "1006020f0a478bf6b699f15c062e42b3"
@@ -11,9 +11,9 @@
         "gui-x": "400"
         "gui-y": "900"
     "oai-epc":
-      charm: cs:~abotcharm/trusty/oai-epc
+      charm: /src/epc-test/abot_charm/oai-epc
       num_units: 1
-      constraints: "arch=amd64 ram=4G"
+      constraints: "arch=amd64 mem=4G"
       series: trusty
       options:
         gummei_tai_mnc: "93"
@@ -23,17 +23,19 @@
     "mysql":
       charm: cs:mysql-55
       num_units: 1
-      constraints: "arch=amd64 ram=1G"
+      constraints: "arch=amd64 mem=2G"
       series: trusty
       annotations:
         "gui-x": "200"
         "gui-y": "300"
     abot-epc-basic:
-      charm: cs:~abotcharm/xenial/abot-epc-basic
-      constraints: "arch=amd64 ram=6G"
+      charm: /src/epc-test/abot_charm/abot-epc-basic
+      constraints: "arch=amd64 mem=4G"
       series: xenial
       expose: true
       num_units: 1
+      options:
+        abot_app: "abot-functest-basic"
       annotations:
         "gui-x": "400"
         "gui-y": "700"
@@ -48,4 +50,5 @@
       - "abot-epc-basic:epc"
     - - "oai-epc:ssh-abot-epc"
       - "abot-epc-basic:ssh-abot"
-  series: xenial
+  series: trusty
+

@@ -4,69 +4,25 @@
 # Best practice suggests you execute the hooks/install and
 # hooks/config-changed to ensure all updates are processed
 set -eu
-DIR=/etc/rebaca-test-suite
 
-abot_epc_basic_url=`config-get abot_epc_basic_repo_url`
-abot_epc_bsic_package_name=`config-get abot_epc_basic_package`
+abot_app=`config-get abot_app`
+abot_version=`config-get abot_version`
 
-rm -rf $CHARM_DIR/lib/target
-rm -rf $CHARM_DIR/lib/log/*
+ABOT_DEPLOY_DIR=/etc/rebaca-test-suite
 
-rm -rf $DIR/*
+(cd ${CHARM_DIR}; ./install-abot.sh -a ${abot_app} -v ${abot_version} -nc)
 
-#Remove the existing version of the abot package
-rm -f $CHARM_DIR/payload/abot*.deb
+# Change permissions of the ABOT_DEPLOY_DIR folders 
+chown -R ubuntu:ubuntu `readlink ${ABOT_DEPLOY_DIR}`
 
-if [[ ! -d "$CHARM_DIR/payload" ]]; then
-    mkdir $CHARM_DIR/payload
+if [ ! -f ~/.ssh/id_rsa.pub ];
+   then
+      ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+      pub_key=`cat ~/.ssh/id_rsa.pub`
+      echo "$pub_key" | sed 's/\r//' >> ~/.ssh/authorized_keys
 fi
-
-#Download the ABOT package and install it
-if [[ ! -f "$CHARM_DIR/payload/$abot_epc_bsic_package_name" ]]; then
-    wget $abot_epc_basic_url/$abot_epc_bsic_package_name -O $CHARM_DIR/payload/$abot_epc_bsic_package_name
-fi
-
-
-#Install the package using dpkg
-dpkg --install $CHARM_DIR/payload/$abot_epc_bsic_package_name
-
-juju-log "Install abot package completed ..."
-
-if [ `ls -1 ~ubuntu/test-scenarios | grep feature | wc -l` -gt 0 ]; then
-  mkdir -p  ~ubuntu/test-scenarios
-  cp -f ~ubuntu/test-scenarios/*.feature $CHARM_DIR/lib/featureFiles/
-fi
-
-#Create the temporary folder for the framework binaries
-if [ ! -d ~ubuntu/framework-binaries ]; then
-  mkdir -p ~ubuntu/framework-binaries
-  chown ubuntu ~ubuntu/framework-binaries
-  chgrp ubuntu ~ubuntu/framework-binaries
-fi
-
-#Create symlinks to installation
-mkdir -p $DIR/tags
-
-ln -s $CHARM_DIR/lib/bin $DIR/bin
-ln -s $CHARM_DIR/lib/log $DIR/log
-ln -s $CHARM_DIR/lib/featureFiles $DIR/featureFiles
-ln -s $CHARM_DIR/lib/config $DIR/config
-ln -s $CHARM_DIR/lib/jar $DIR/jar
-
-#Copy oaisim init script
-cp $DIR/bin/oaisim.conf /etc/init 
-
-#Change permissions of charm/lib folder
-chown -R ubuntu:ubuntu $CHARM_DIR/lib
-
-#Build the oaisim
-juju-log "Build oaisim..."
-(cd /srv/openair5G/cmake_targets; ./build_oai_rebaca -g --oaisim -x --install-system-files)
-
-#Change permissions of the openair5G folders
-chown -R ubuntu:ubuntu /srv
 
 open-port 80/tcp
 
-juju-log "Abot update complete!"
-status-set maintenance "Abot updated! Reset relations to get into ready state"
+juju-log "ABot update complete!"
+status-set maintenance "ABot updated! Reset relations to get into active state"

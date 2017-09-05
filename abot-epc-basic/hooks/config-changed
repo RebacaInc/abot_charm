@@ -2,10 +2,9 @@
 # config-changed occurs everytime a new configuration value is updated (juju set)
 set -e
 
-DIR=/etc/rebaca-test-suite
-TAG_DIR=/etc/rebaca-test-suite/tags
+ABOT_DEPLOY_DIR=/etc/rebaca-test-suite
+TAG_DIR=${ABOT_DEPLOY_DIR}/tags
 
-#rm -f $DIR/tags
 tags=$(config-get tags)
 
 if [ -n $TAG_DIR/tags ]; then
@@ -33,32 +32,10 @@ fi
 ip=`$DIGSHORT $private_address`
   
 if [ ! -z $ip ]; then
-    sed -i "s/ABOT.Host.IPAddress=[^ ]*/ABOT.Host.IPAddress=$ip/" $CHARM_DIR/lib/config/config.properties
-    sed -i "s#ABOT.ENB.ENB_IPV4_ADDRESS_FOR_S1_MME=[^ ]*#ABOT.ENB.ENB_IPV4_ADDRESS_FOR_S1_MME=$ip/24#" $CHARM_DIR/lib/config/epc_defaults.conf
-    sed -i "s#ABOT.ENB.ENB_IPV4_ADDRESS_FOR_S1U=[^ ]*#ABOT.ENB.ENB_IPV4_ADDRESS_FOR_S1U=$ip/24#" $CHARM_DIR/lib/config/epc_defaults.conf
+    sed -i "s/ABOT.SecureShell.IPAddress=[^ ]*/ABOT.SecureShell.IPAddress=$ip/" ${ABOT_DEPLOY_DIR}/config/ABotConfig.properties
+    sed -i "s#ABOT.ENB.ENB_IPV4_ADDRESS_FOR_S1_MME=[^ ]*#ABOT.ENB.ENB_IPV4_ADDRESS_FOR_S1_MME=$ip/24#" ${ABOT_DEPLOY_DIR}/config/abot-epc-basic_defaults.conf
+    sed -i "s#ABOT.ENB.ENB_IPV4_ADDRESS_FOR_S1U=[^ ]*#ABOT.ENB.ENB_IPV4_ADDRESS_FOR_S1U=$ip/24#" ${ABOT_DEPLOY_DIR}/config/abot-epc-basic_defaults.conf
 else
     juju-log "IP Address of local unit not available - exiting with error"
     exit 2
-fi
-
-#Configure MAVEN proxy
-if [  -z $http_proxy ];then
-   juju-log "No proxy found"
-else
-    cat <<EOT > /root/.m2/settings.xml
-<settings>
-<proxies>
-   <proxy>
-      <id>optional</id>
-      <active>true</active>
-      <protocol>http</protocol>
-      <username>proxyuser</username>
-      <password>proxypass</password>
-      <host>$PROXY_ADDRESS</host>
-      <port>$PROXY_PORT</port>
-      <nonProxyHosts>local.net|some.host.com</nonProxyHosts>
-    </proxy>
-</proxies>
-</settings>
-EOT
 fi

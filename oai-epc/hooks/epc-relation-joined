@@ -65,4 +65,8 @@ fi
 #we say a priori that epc is not running just to force
 #enb to actually run only if the tac is in the tai list or 
 #after having verified that is so.
+if [ -f /tmp/opcvalue ];then
 
+  relation-set opc-key=$(cat /tmp/opcvalue)
+
+fi

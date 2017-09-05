@@ -21,4 +21,6 @@ requires:
     interface: S6a-hss
   ssh-abot-epc:
     interface: ssh
+  opc-key:
+    interface: opc-key
 

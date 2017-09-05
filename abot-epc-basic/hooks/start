@@ -2,24 +2,29 @@
 # Here put anything that is needed to start the service.
 # Note that currently this is run directly after install
 set -eu
-DIR=/etc/rebaca-test-suite
-TAG_DIR=$DIR/tags
 
-tags=`cat $TAG_DIR/tags`
+# Generate ssh key for root user 
+if [ ! -f /root/.ssh/id_rsa.pub ];
+   then
+      ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
+      pub_key=`cat /root/.ssh/id_rsa.pub`
+      echo "${pub_key}" | sed 's/\r//' >> /root/.ssh/authorized_keys
+  else 
+      pub_key=`cat /root/.ssh/id_rsa.pub`
+      echo "${pub_key}" | sed 's/\r//' >> /root/.ssh/authorized_keys
+fi
 
-juju-log "Running the test with the tags $tags"
-cd $CHARM_DIR/lib/
-. scripts/tags_update
+# Generate ssh key for ubuntu user 
+if [ ! -f /home/ubuntu/.ssh/id_rsa.pub ];
+   then
+    sudo -u ubuntu bash << EOF
+    ssh-keygen -t rsa -N "" -f /home/ubuntu/.ssh/id_rsa
+EOF
+      pub_key=`cat /home/ubuntu/.ssh/id_rsa.pub`
+      echo "${pub_key}" | sed 's/\r//' >> /home/ubuntu/.ssh/authorized_keys
+  else
+      pub_key=`cat /home/ubuntu/.ssh/id_rsa.pub`
+      echo "${pub_key}" | sed 's/\r//' >> /home/ubuntu/.ssh/authorized_keys
+fi
 
-#Setup the link to testReports folder
-rm -Rf /var/www/html 2> /dev/null
-ln -s $CHARM_DIR/lib /var/www/html
-
-#Build the oaisim
-juju-log "Build oaisim..."
-(cd /srv/openair5G/cmake_targets; ./build_oai_rebaca -I -g --oaisim -x --install-system-files)
-
-#Change permissions of the openair5G folders
-chown -R ubuntu:ubuntu /srv
-
-juju-log "Abot updated! Setup relations to get into ready state..."
+status-set maintenance "ABot updated! Setup relations to get into active state..."

@@ -4,36 +4,29 @@ set -eu
 
 ABOT_DEPLOY_DIR=/etc/rebaca-test-suite
 ELASTIC_FILE_NAME=${ABOT_DEPLOY_DIR}/es-conf
-ABOT_TAGS_DIR=${ABOT_DEPLOY_DIR}/tags
+
 tags_defined=1
+no_report_needed=0
 
-TAG_NAMES=$(action-get tagnames)
-TAG_FILE_NAME=$(action-get filename)
-
-if [ ! -z "$TAG_FILE_NAME" ]; then
-    juju-log "Tag file specified: $TAG_FILE_NAME"
-else
-    #Assign default file name
-    TAG_FILE_NAME=tags
-fi
 
 new_tags=
 
-if [ -z "${TAG_NAMES}" ]; then
-    juju-log "No tag names specified"
-    tags_defined=0
-    #Check if filename specified and file exists
-    if [ ! -z "${TAG_FILE_NAME}" ] && [ -f ${ABOT_TAGS_DIR}/${TAG_FILE_NAME} ] ; then
-        tags=`cat ${ABOT_TAGS_DIR}/${TAG_FILE_NAME}`
-    fi
+if [ $# -gt 0 ]; then
+    TAG_NAMES="$1"
+    #   echo "Tag(s) = ${TAG_NAMES}"
 else
-    juju-log "Tag names: ${TAG_NAMES}"
+    #   echo "No tags specified - exiting"
+    exit 1
+fi
+
+if [ ! -z "${TAG_NAMES}" ]; then
+    #  echo "Tag names: ${TAG_NAMES}"
 
     #Split the tags and add the @ symbols
     IFS=', ' read -r -a array <<< "${TAG_NAMES}"
     for index in "${!array[@]}"
     do
-        if [ $index -eq 0 ]; then
+        if [ ${index} -eq 0 ]; then
             new_tags="@${array[0]}"
         else
             #Add current tag only if not duplicate
@@ -45,30 +38,32 @@ else
     done
 
     #Assign the tags variable accordingly.
-    tags=${new_tags}
+    tags=$new_tags
 fi
 
-if [ -z "${tags}" ]; then
-    juju-log "No tags found for execution"
+if [ -z "$tags" ]; then
+    echo "No tags found for execution"
 else
-    juju-log "Running the test with the tags ${tags}"
+    echo "Running the test with the tags $tags"
 
-    ${ABOT_DEPLOY_DIR}/bin/tags_update ${tags}
+    # status-set active  "Executing run action"
+    ${ABOT_DEPLOY_DIR}/bin/tags_update_local $tags
 
-    #Removing previous run artifacts
+    # Removing previous run artifacts
     rm -rf ${ABOT_DEPLOY_DIR}/log/*.*
 
     (cd ${ABOT_DEPLOY_DIR}; \
-     #perform mvn clean first
+     # Perform mvn clean first
      mvn clean; \
-     #Run the install target now
+     # Run the install target now
      mvn install -Dtest=RunScenarios -DrootDir=com/rebaca/abot || true)
 
-    #Copying log artifacts to appropriate artifacts folder
+    # Copying log artifacts to appropriate artifacts folder
     LAST_REPORT_DIR="$(ls -td -- ${ABOT_DEPLOY_DIR}/artifacts/*/ | head -n 1)"
+
     cp -R ${ABOT_DEPLOY_DIR}/log/*.* ${LAST_REPORT_DIR}
 
-    #Process Test results and post to ElasticSearch
+    # Process Test results and post to ElasticSearch
     touch ${ELASTIC_FILE_NAME}
     ES_CONF=`cat ${ELASTIC_FILE_NAME}`
     if [  -z "${ES_CONF}" ]; then

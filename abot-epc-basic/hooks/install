@@ -7,99 +7,18 @@
 
 set -eu
 
-abot_epc_basic_url=`config-get abot_epc_basic_repo_url`
-abot_epc_basic_package_name=`config-get abot_epc_basic_package`
-DIR=/etc/rebaca-test-suite
-mkdir -p $DIR
+abot_app=`config-get abot_app`
+abot_version=`config-get abot_version`
 
-juju-log "Updating existing Ubuntu libraries..."
-apt-get update
-juju-log "Existing Ubuntu libraries update done."
+ABOT_DEPLOY_DIR=/etc/rebaca-test-suite
 
-juju-log "Installing Java."
-cd $CHARM_DIR/lib/
-. scripts/install_java
-juju-log "Java Installed."
+(cd ${CHARM_DIR}; ./install-abot.sh -a ${abot_app} -v ${abot_version} -nc)
 
-#Installing dependencies for abot-ims-basic
-apt-get -y install apache2
-
-juju-log "Installing Maven..."
-apt-get update
-apt-get -y install maven
-juju-log "Maven installation done."
-
-if [[ ! -d "$CHARM_DIR/payload" ]]; then
-    mkdir $CHARM_DIR/payload
-fi
-#Download the ABOT package and install it
-if [[ ! -f "$CHARM_DIR/payload/$abot_epc_basic_package_name" ]]; then
-    wget $abot_epc_basic_url/$abot_epc_basic_package_name -O $CHARM_DIR/payload/$abot_epc_basic_package_name
-fi
-
-#Install the package using dpkg
-dpkg --install $CHARM_DIR/payload/$abot_epc_basic_package_name
-juju-log "Install abot package completed ..."
-
-
-#Install the PHP plugin
-apt-get -y install libapache2-mod-php
-
-
-if [ ! -d ~ubuntu/test-scenarios ]; then
-  mkdir -p ~ubuntu/test-scenarios
-  chown ubuntu ~ubuntu/test-scenarios
-  chgrp ubuntu ~ubuntu/test-scenarios
-fi
-
-if [ ! -d ~ubuntu/framework-binaries ]; then
-  mkdir -p ~ubuntu/framework-binaries
-  chown ubuntu ~ubuntu/framework-binaries
-  chgrp ubuntu ~ubuntu/framework-binaries
-fi
-
-#Create symlinks to installation
-mkdir -p $DIR/tags
-
-ln -s $CHARM_DIR/lib/bin $DIR/bin
-ln -s $CHARM_DIR/lib/log $DIR/log
-ln -s $CHARM_DIR/lib/featureFiles $DIR/featureFiles
-ln -s $CHARM_DIR/lib/config $DIR/config
-ln -s $CHARM_DIR/lib/jar $DIR/jar
-
-#Generate ssh key for root user 
-if [ ! -f /home/ubuntu/.ssh/id_rsa.pub ];
-   then
-      ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
-      pub_key=`cat /root/.ssh/id_rsa.pub`
-      echo "$pub_key" | sed 's/\r//' >> /root/.ssh/authorized_keys
-  else 
-      pub_key=`cat /root/.ssh/id_rsa.pub`
-      echo "$pub_key" | sed 's/\r//' >> /root/.ssh/authorized_keys
-fi
-
-if [ ! -f /home/ubuntu/.ssh/id_rsa.pub ];
-   then
-    sudo -u ubuntu bash << EOF
-    ssh-keygen -t rsa -N "" -f /home/ubuntu/.ssh/id_rsa
-EOF
-      pub_key=`cat /home/ubuntu/.ssh/id_rsa.pub`
-      echo "$pub_key" | sed 's/\r//' >> /home/ubuntu/.ssh/authorized_keys
-  else
-      pub_key=`cat /home/ubuntu/.ssh/id_rsa.pub`
-      echo "$pub_key" | sed 's/\r//' >> /home/ubuntu/.ssh/authorized_keys
-fi
-
-#Copy init script of oaisim 
-cp $DIR/bin/oaisim.conf /etc/init 
-
-#Change permissions of the charm/lib folders 
-chown -R ubuntu:ubuntu $CHARM_DIR/lib
-
-#Change permissions of the openair5G folders
-chown -R ubuntu:ubuntu /srv
+# Change permissions of the ABOT_DEPLOY_DIR folders 
+chown -R ubuntu:ubuntu `readlink ${ABOT_DEPLOY_DIR}`
 
 open-port 80/tcp
+open-port 5000/tcp
 
-juju-log "Abot Install complete!"
-status-set maintenance "Abot installed! Waiting to start..."
+juju-log "ABot Install complete!"
+status-set maintenance "ABot installed! Waiting to start..."
