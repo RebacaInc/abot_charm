@@ -1,9 +1,10 @@
 #!/bin/bash
 
 set -e
+ABOT_DEPLOY_DIR=/etc/rebaca-test-suite
 
-hss_host=`grep "^ABOT.Host.IPAddress" $CHARM_DIR/lib/config/config.properties | cut -d= -f2`
-hss_realm=`grep "^ABOT_HSS.OriginRealm" $CHARM_DIR/lib/config/config.properties | cut -d= -f2`
+hss_host=`grep "^ABOT.SecureShell.IPAddress" ${ABOT_DEPLOY_DIR}/config/ABotConfig.properties | cut -d= -f2`
+hss_realm=`grep "^ABOT_HSS.OriginRealm" ${ABOT_DEPLOY_DIR}/config/ABotConfig.properties | cut -d= -f2`
 
 relation-set public-address=$hss_host
 relation-set hss-realm=$hss_realm
@@ -15,4 +16,3 @@ relation-set hss-port=3868
 #      ssh_key=`echo "$ssh_key" | sed 's/\r//'`
 #      relation-set ssh-key=$ssh_key
 #fi
-

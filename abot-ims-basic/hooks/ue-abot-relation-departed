@@ -1,0 +1,16 @@
+#!/bin/bash
+set -e
+ABOT_DEPLOY_DIR=/etc/rebaca-test-suite
+
+juju-log "Invoking cscf-departed relation"
+
+ims_cscf_hostname=cscf_host.rebaca.local
+
+juju-log "CSFP FQDN  ${ims_cscf_hostname}"
+
+ims_cscf_ip=192.168.255.255
+
+sed -i "s/P_CSCF.Host.IPAddress=[^ ]*/P_CSCF.Host.IPAddress=${ims_cscf_ip}/" ${ABOT_DEPLOY_DIR}/config/ABotConfig.properties
+
+echo -n ${ims_cscf_hostname} > ${ABOT_DEPLOY_DIR}/sip_server
+echo -n ${ims_cscf_ip} > ${ABOT_DEPLOY_DIR}/ims_cscf_ip

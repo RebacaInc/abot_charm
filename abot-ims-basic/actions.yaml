@@ -61,8 +61,8 @@ update-diameter-params:
    cxserver_clientIp:
      type: string
 
-configure-hss-client:
-  description: Configure the HSS client to point to Abot(diameter) or to authenticate from cache. Possible values of auth-type parameter are hss and cache.
+configure-cx-client:
+  description: Configure the Cx client to point to Abot(diameter) or to authenticate from cache. Possible values of auth-type parameter are hss and cache.
   params:
     auth-type:
       type: string

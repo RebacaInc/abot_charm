@@ -43,19 +43,19 @@ system_kpi()
 kill_running_processes()
 {
     num_process=`ps -ef | grep sipp | grep -v grep | wc -l`
-    if [ $num_process -gt 0 ] ; then
+    if [ ${num_process} -gt 0 ] ; then
         sudo killall sipp
         sleep 2
     fi
     
     java_process=`ps -ef | grep java | grep -v grep | wc -l`
-    if [ $java_process -gt 0 ] ; then
+    if [ ${java_process} -gt 0 ] ; then
         sudo killall java
         sleep 2
     fi
     
     tcpdump_process=`ps -ef | grep tcpdump | grep -v grep | wc -l`
-    if [ $tcpdump_process -gt 0 ] ; then
+    if [ ${tcpdump_process} -gt 0 ] ; then
         sudo killall tcpdump
         sleep 2
     fi
@@ -65,27 +65,27 @@ kill_running_processes()
 
 system_kpi  IMS-BENCHMARK_START
 
-PACKET_CAPTURE_ENABLE=`grep "ABOT.PacketCapture=" /etc/rebaca-test-suite/config/config.properties | awk -F"=" '{print $2}'`
-juju-log "PACKET_CAPTURE_ENABLE=$PACKET_CAPTURE_ENABLE"
+PACKET_CAPTURE_ENABLE=`grep "ABOT.PacketCapture=" ${configfile_dir}/ABotConfig.properties | awk -F"=" '{print $2}'`
+juju-log "PACKET_CAPTURE_ENABLE=${PACKET_CAPTURE_ENABLE}"
 
 
 kill_running_processes
 
-./actions/configure-hss-client cache
+./actions/configure-cx-client cache
 
-sed -e "s/USER_RANGE_START/$user_range_start/g" -e "s/USER_RANGE_END/$user_range_end/g"  <$featurefile_dir/001-clearwater-ims-bulk-user-add.feature.template>$featurefile_dir/001-clearwater-ims-bulk-user-add.feature
+sed -e "s/USER_RANGE_START/${user_range_start}/g" -e "s/USER_RANGE_END/${user_range_end}/g"  <${featurefile_dir}/001-clearwater-ims-bulk-user-add.feature.template>${featurefile_dir}/001-clearwater-ims-bulk-user-add.feature
 
 
-if [ "$PACKET_CAPTURE_ENABLE" == "true" ]; then
-  sed -ie "s|ABOT\.PacketCapture=.*|ABOT\.PacketCapture=false|" $configfile_dir/config.properties
-  ./actions/run ims-bulk-user-add no-report
-  sed -ie "s|ABOT\.PacketCapture=.*|ABOT\.PacketCapture=true|" $configfile_dir/config.properties
+if [ "${PACKET_CAPTURE_ENABLE}" == "true" ]; then
+  sed -ie "s|ABOT\.PacketCapture=.*|ABOT\.PacketCapture=false|" ${configfile_dir}/ABotConfig.properties
+  ./actions/run_local ims-bulk-user-add no-report
+  sed -ie "s|ABOT\.PacketCapture=.*|ABOT\.PacketCapture=true|" ${configfile_dir}/ABotConfig.properties
 else
-  ./actions/run ims-bulk-user-add no-report
+  ./actions/run_local ims-bulk-user-add no-report
 fi
 
 
-if [ $sipscenario = invite ]; then
+if [ ${sipscenario} = invite ]; then
    initial_wait=15
    scenarioxml="/etc/rebaca-test-suite/scenarios/sip_invite_load.xml"
 else
@@ -98,27 +98,27 @@ status-set active  "Executing benchmark action"
 touch ~/result.log
 
 
-$sipcommand -sf $scenarioxml -inf $sip_users -m  $num_calls -r $callrate -max_recv_loops $max_recv_loops -max_sched_loops $max_sched_loops -recv_timeout $recv_timeout -t tn >  ~/result.log 2>&1 &
+${sipcommand} -sf ${scenarioxml} -inf ${sip_users} -m  ${num_calls} -r ${callrate} -max_recv_loops ${max_recv_loops} -max_sched_loops ${max_sched_loops} -recv_timeout ${recv_timeout} -t tn >  ~/result.log 2>&1 &
 
 
 loop_count=$((total_timeout*2))
-juju-log "resultant loop count "$loop_count
-sleep $initial_wait
-while [ $iter_start -lt $loop_count ]
+juju-log "resultant loop count "${loop_count}
+sleep ${initial_wait}
+while [ ${iter_start} -lt ${loop_count} ]
 do
     num_process=`ps -ef | grep sipp | grep -v grep | wc -l`
-    juju-log "number of SIP process "$num_process
-    if [ $num_process -lt 1 ] ; then
+    juju-log "number of SIP process "${num_process}
+    if [ ${num_process} -lt 1 ] ; then
         break
     else
         echo "process present"
-        sleep $sleep_for_completion
+        sleep ${sleep_for_completion}
     fi
-    iter_start=`expr $iter_start + 1`
+    iter_start=`expr ${iter_start} + 1`
 done
 
 num_process=`ps -ef | grep sipp | grep -v grep | wc -l`
-if [ $num_process -gt 0 ] ; then
+if [ ${num_process} -gt 0 ] ; then
     sudo killall sipp
 fi
 
@@ -134,25 +134,25 @@ multiply=$((successfulcall*100))
 passpercentage=$((multiply/totalcall))
 failedcalls=$((totalcall-successfulcall))
 
-if [ $sipscenario = invite ]; then
+if [ ${sipscenario} = invite ]; then
    csresponsetime=`awk '/Response\ Time\ call\-set/ { print $7 }' ~/result.log`
 fi
 #set benchmark data
 
-benchmark-data 'callrate' $callrate 'CPS'
-benchmark-data 'totalcalls' $totalcall 'nos'
-benchmark-data 'successfulcalls' $successfulcall  'nos'
-benchmark-data 'failedcalls' $failedcalls 'nos'
-benchmark-data 'regresponsetime' $regresponsetime 'HH:mm:ss:SSS'
-benchmark-data 'calllength' $calllength 'HH:mm:ss:SSS'
-if [ $sipscenario = invite ]; then
-   benchmark-data 'csresponsetime' $csresponsetime 'HH:mm:ss:SSS'
+benchmark-data 'callrate' ${callrate} 'CPS'
+benchmark-data 'totalcalls' ${totalcall} 'nos'
+benchmark-data 'successfulcalls' ${successfulcall}  'nos'
+benchmark-data 'failedcalls' ${failedcalls} 'nos'
+benchmark-data 'regresponsetime' ${regresponsetime} 'HH:mm:ss:SSS'
+benchmark-data 'calllength' ${calllength} 'HH:mm:ss:SSS'
+if [ ${sipscenario} = invite ]; then
+   benchmark-data 'csresponsetime' ${csresponsetime} 'HH:mm:ss:SSS'
 fi
 
 
 # Set the composite, which is the single most important score
 
-benchmark-composite  $passpercentage 'percent' 'desc'
+benchmark-composite  ${passpercentage} 'percent' 'desc'
 
 #Benchchmark finish
 benchmark-finish || true

@@ -1,0 +1,33 @@
+#!/bin/bash
+set -e
+ABOT_DEPLOY_DIR=/etc/rebaca-test-suite
+
+juju-log "Configuring Cx client"
+
+if [ "$#" -eq  "0" ]; then
+   AUTH_TYPE=$(action-get auth-type)
+else
+   AUTH_TYPE="$1"
+   juju-log " AUTH_TYPE = $1"
+fi
+
+CX_CLIENT_IP=`grep "^HSS_MIRROR.SecureShell.IPAddress" ${ABOT_DEPLOY_DIR}/config/ABotConfig.properties | cut -d= -f2`
+if [ -z "${CX_CLIENT_IP}" ]; then
+  juju-log "HSS hostname not found - exiting"
+  exit 0
+fi
+
+juju-log "CX_CLIENT_IP=${CX_CLIENT_IP}"
+
+ABOT_IP=`grep "^ABOT.SecureShell.IPAddress=" ${ABOT_DEPLOY_DIR}/config/ABotConfig.properties | cut -d= -f2`
+juju-log "ABOT_IP=${ABOT_IP}"
+
+CX_CONFIGURATION_SCRIPT=configure_is_cscf
+juju-log "Copying configuration script ${CX_CONFIGURATION_SCRIPT} to ${CX_CLIENT_IP}"
+
+sed -i "s/HSS_HOSTNAME=[^ ]*/HSS_HOSTNAME=${ABOT_IP}/" ${ABOT_DEPLOY_DIR}/bin/${CX_CONFIGURATION_SCRIPT}
+sed -i "s/HSS_TAG=[^ ]*/HSS_TAG=${AUTH_TYPE}/" ${ABOT_DEPLOY_DIR}/bin/${CX_CONFIGURATION_SCRIPT}
+
+(cd ${ABOT_DEPLOY_DIR}/bin
+ scp -i /home/ubuntu/.ssh/id_rsa -o StrictHostKeyChecking=no ${CX_CONFIGURATION_SCRIPT} ubuntu@${CX_CLIENT_IP}:/home/ubuntu 
+ ssh -i /home/ubuntu/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@${CX_CLIENT_IP} /home/ubuntu/${CX_CONFIGURATION_SCRIPT})

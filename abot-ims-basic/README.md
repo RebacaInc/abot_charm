@@ -28,18 +28,19 @@ As such, assuming that the SUT is the Clearwater IMS( https://github.com/thomnic
 The typical command for deploying Abot is as follows:
 
 
-> juju deploy --repository=~/charms local:trusty/abot
+> juju deploy cs:~abotcharm/trusty/abot-ims-basic
 
 Subsequently, it needs to be exposed using the following command.
 
-> juju expose abot
+> juju expose abot-ims-basic
 
 ## Adding Relations with ClearWater IMS charms
 
 The following relations should be added if the ClearWater IMS bundle is also installed in the setup.
-> juju add-relation abot dns
-> juju add-relation abot clearwater-bono
-> juju add-relation abot clearwater-homestead
+> juju add-relation abot-ims-basic dns
+> juju add-relation abot-ims-basic clearwater-bono
+> juju add-relation abot-ims-basic:hss-prov clearwater-homestead:homestead-prov-user
+> juju add-relation clearwater-homestead:hss abot-ims-basic:hss-abot
 
 
 # Using Abot
@@ -67,36 +68,32 @@ When the charm is being installed, several files are downloaded:
 # Test Case Execution
 
  - After deployment of Abot charm, the following actions can be quickly executed to verify whether the charm works fine.
-> juju action do  abot/[abot-unit-number] run
+> juju action do  abot-ims-basic/[abot-unit-number] run
 
  - The report UI can then be viewed by clicking on the link that appears under the specific unit of the service in the Juju GUI
  
- -  When testing against the ClearWater IMS, the following script needs to be invoked from the Juju controller machine in order to create the ssh keys on the Test Framework and distribute them on the relevant IMS nodes 
-  
-
-> ~/charms/trusty/abot/lib/scripts/add-keys.sh
 
 
 - The following action(s) will add new tags for subsequent execution. Pls. note that the unit number below should be replaced with the proper value from the given deployment. Also, pls. note that the tag-names specified below are sample ones and should be replaced by the actual tags associated with newly authored feature files.
   
-
-> juju action do abot/[abot-unit-number] add-tags tagnames=sip-single-call
-> juju action do  abot/[abot-unit-number] add-tags tagnames=sip-subscribe-notify,sip-messaging
+> juju run-action abot-ims-basic/[abot-unit-number] configure-cx-client auth-type=cache
+> juju run-action abot-ims-basic/[abot-unit-number] add-tags tagnames=sip-single-call
+> juju run-action  abot-ims-basic/[abot-unit-number] add-tags tagnames=sip-subscribe-notify,sip-messaging
 
 - Pls. note that the new tags may also be added to specific filenames; for future retrieval. 
-> juju action do  abot/[abot-unit-number] add-tags tagnames=sip-register,sip-ssh-test,ims-user-add,sip-single-call,sip-multi-call,sip-unregister   filename=normal_cases
-> juju action do  abot/[abot-unit-number] add-tags tagnames=sip-call-busy,sip-call-no-answer,sip-call-reject,sip-call-unavailable,sip-call-cancel,sip-malformed_request,sip-invalid-register,sip-single-call-error  filename=negative_cases
+> juju run-action  abot-ims-basic/[abot-unit-number] add-tags tagnames=sip-register,sip-ssh-test,ims-user-add,sip-single-call,sip-multi-call,sip-unregister   filename=normal_cases
+> juju run-action  abot-ims-basic/[abot-unit-number] add-tags tagnames=sip-call-busy,sip-call-no-answer,sip-call-reject,sip-call-unavailable,sip-call-cancel,sip-malformed_request,sip-invalid-register,sip-single-call-error  filename=negative_cases
 
 
 - The following action will execute all test cases(feature files) for which the tags have been added through the previous command. Pls. note that the tags can be run from a specified filename as well.
 
->  juju action do  abot/[abot-unit-number] run
+>  juju run-action abot-ims-basic/[abot-unit-number] run
 
 - Execute tags from the file titled ***normal_cases***. This file includes tags for normal/successful call scenarios.
->  juju action do  abot/[abot-unit-number] run filename=normal_cases
+>  juju run-action abot-ims-basic/[abot-unit-number] run filename=normal_cases
 
 - Execute tags from the file titled ***normal_cases***. This file includes tags for normal/successful call scenarios.
->  juju action do  abot/[abot-unit-number] run filename=normal_cases
+>  juju run-action   abot-ims-basic/[abot-unit-number] run filename=normal_cases
 
 - Execute tags from the file titled ***negative_cases***. This file includes tags for negative call scenarios; such as *user busy*, *no answer*, *cancel* and so on.
 >  juju action do  abot/[abot-unit-number] run filename=negative_cases
@@ -109,7 +106,7 @@ When the charm is being installed, several files are downloaded:
 - The Juju charm upgrade action should be invoked to propagate these new feature files onto the deployed service node.
   
 
-> juju upgrade-charm  --repository=~/charms abot
+> juju upgrade-charm  abot-ims-absic
 
 - Once the upgrade is successful, the test case execution steps can be followed to execute one or more feature files.
 

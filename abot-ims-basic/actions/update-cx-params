@@ -1,0 +1,45 @@
+#!/bin/bash
+# Action -Run
+set -eu
+ABOT_DEPLOY_DIR=/etc/rebaca-test-suite
+
+CXSERVER_ORIGINHOST=$(action-get cxserver-originhost)
+CXSERVER_ORIGINREALM=$(action-get cxServer-originrealm)
+CXSERVER_DESTHOST=$(action-get cxserver-desthost)
+CXSERVER_CLIENT_IP=$(action-get cxserver-clientip)
+
+
+if [ ! -z "${CXSERVER_ORIGINHOST}" ]; then
+  juju-log "Setting CxServer_OriginHost=${CXSERVER_ORIGINHOST}"
+  sed -i "s/CxServer.OriginHost=[^ ]*/CxServer.OriginHost=${CXSERVER_ORIGINHOST}/" ${ABOT_DEPLOY_DIR}/config/ABotConfig.properties
+  if [ `grep -c ${CXSERVER_ORIGINHOST} /etc/hosts` == "0" ]; then
+     public_hostname=$(unit-get public-address)
+     juju-log "Public Hostname: ${public_hostname}"
+     public_ip_address=`dig +short ${public_hostname}`
+     juju-log "Inserting originhost(${CXSERVER_ORIGINHOST}) into /etc/hosts file for IP ${public_ip_address}"
+     echo "${public_ip_address}  ${CXSERVER_ORIGINHOST}" >> /etc/hosts
+  fi
+fi
+
+if [ ! -z "${CXSERVER_ORIGINREALM}" ]; then
+  juju-log "CxServer_OriginRealm=${CXSERVER_ORIGINREALM}"
+  sed -i "s/CxServer.OriginRealm=[^ ]*/CxServer.OriginRealm=${CXSERVER_ORIGINREALM}/" ${ABOT_DEPLOY_DIR}/config/ABotConfig.properties
+fi
+
+
+if [ ! -z "${CXSERVER_DESTHOST}" ]; then
+  juju-log "CxServer_DestHost=${CXSERVER_DESTHOST}"
+  sed -i "s/CxServer.DestHost=[^ ]*/CxServer.DestHost=${CXSERVER_DESTHOST}/" ${ABOT_DEPLOY_DIR}/config/ABotConfig.properties
+fi
+
+if [ ! -z "${CXSERVER_CLIENT_IP}" ]; then
+  juju-log "CxServer_Client_IP=${CXSERVER_CLIENT_IP}"
+  #Get the destination host
+  CXSERVER_DEST_HOST=`grep "CxServer.DestHost" ${ABOT_DEPLOY_DIR}/config/ABotConfig.properties | cut -d= -f2`
+  if [ ! -z ${CXSERVER_DEST_HOST} ]; then
+    if [ `grep -c  $CXSERVER_CLIENT_IP  /etc/hosts` == "0" ]; then
+      juju-log "Setting ${CXSERVER_CLIENT_IP} against ${CXSERVER_DEST_HOST} in /etc/hosts"
+      echo "${CXSERVER_CLIENT_IP}  ${CXSERVER_DEST_HOST}" >> /etc/hosts
+    fi
+  fi
+fi
