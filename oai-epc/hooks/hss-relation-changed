@@ -137,5 +137,8 @@ else
 
 fi
     
+hss_opc_val=`relation-get opc-key`
+
+echo $hss_opc_val > /tmp/opcvalue
 
 
