@@ -50,33 +50,19 @@ else
 fi 
 
 #if there is already a db relation, check whether hss is already running
-#if [ -n "$(relation-ids db)" ]; then
+if [ -n "$(relation-ids db)" ]; then
     #add a check if it is really running
     #maybe we add a hss relation and right after a db relation and so
     #we have the db relation, but not HSS running yet.
     check_hss_process
     if [ "$status" -eq 0 ]; then
        relation-set hss_running=yes
+       get_opc_value
     else
        relation-set hss_running=no
     fi
-#fi
-
-juju-log "Setting up opc  info for abot"
-
-imsi_val=`config-get imsi`
-
-UNHEXKEY=`grep "$imsi_val" /srv/.out | grep 'UNHEX' | cut -d "'" -f2`
-
-if [ "$UNHEXKEY" == "" ] ; then
-
-  juju-log "No OPC key found , Check db relation eastablished or not"
-
-else
-
-  relation-set opc-key=$UNHEXKEY
-
 fi
+
 relation-set trigger_restart=0
 relation-set mme_in_db=no
 

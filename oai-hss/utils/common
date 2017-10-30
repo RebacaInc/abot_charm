@@ -209,3 +209,16 @@ else
 fi 
 
 }
+
+get_opc_value(){
+imsi_val=`config-get imsi`
+UNHEXKEY=`grep "$imsi_val" /srv/.out | grep 'UNHEX' | cut -d "'" -f2`
+if [ "$UNHEXKEY" == "" ] ; then
+
+  juju-log "No OPC key found , Check db relation eastablished or not"
+
+else
+  juju-log "OPC key found"
+  relation-set opc-key=$UNHEXKEY
+fi
+}

@@ -7,9 +7,3 @@ juju-log "Setting EPC charm relation variables"
 relation-set TAC=1
 sed -i "s/ABOT.ENB.tracking_area_code=[^ ]*/ABOT.ENB.tracking_area_code=1/" ${ABOT_DEPLOY_DIR}/config/ABotConfig.properties
 
-if [  -f /home/ubuntu/.ssh/id_rsa.pub ];
-   then
-      ssh_key=`cat /home/ubuntu/.ssh/id_rsa.pub`
-      ssh_key=`echo "$ssh_key" | sed 's/\r//'`
-      relation-set abot_epc_ssh-key="$ssh_key"
-fi

@@ -38,11 +38,6 @@ set_env_paths
 
 DEBUG_RESTART=`relation-get DEBUG_RESTART`
 
-if [ ! -f $CHARM_DIR/.spgw_s11_ipv4 ];then
-    juju-log "SPGW and MME relation not found"
-    exit 0
-fi
-
 if [ -n "$DEBUG_RESTART" ]; then
   juju-log "mme restart is requested"
   systemctl stop mme || true

@@ -8,7 +8,8 @@ set -ex
 mobile_country_code=`relation-get MCC`
 mobile_network_code=`relation-get MNC`
 mme_ip_address_ipv4=`relation-get mme_ip`
-epc_running=`relation-get epc_running`
+epc_running=`relation-get mme_running`
+spgw_ip_address_ipv4=`relation-get spgw_ip_address_ipv4`
 unhex_key=`relation-get opc-key`
 
 
@@ -16,6 +17,7 @@ sed -i "s/ABOT.ENB.mobile_country_code=[^ ]*/ABOT.ENB.mobile_country_code=$mobil
 sed -i "s/ABOT.ENB.mobile_network_code=[^ ]*/ABOT.ENB.mobile_network_code=$mobile_network_code/" ${ABOT_DEPLOY_DIR}/config/abot-epc-basic_defaults.conf
 sed -i "s/ABOT.ENB.mme_ip_address_ipv4=[^ ]*/ABOT.ENB.mme_ip_address_ipv4=$mme_ip_address_ipv4/" ${ABOT_DEPLOY_DIR}/config/abot-epc-basic_defaults.conf
 sed -i "s/MME.SecureShell.IPAddress=[^ ]*/MME.SecureShell.IPAddress=$mme_ip_address_ipv4/" ${ABOT_DEPLOY_DIR}/config/ABotConfig.properties
+sed -i "s/SPGW.SecureShell.IPAddress=[^ ]*/SPGW.SecureShell.IPAddress=${spgw_ip_address_ipv4}/" ${ABOT_DEPLOY_DIR}/config/ABotConfig.properties
 sed -i -e "s/OPC=\".*\";/OPC=\"$unhex_key\";/" ${ABOT_DEPLOY_DIR}/oaisim/config/ue_eurecom_test_sfr.conf
 
 if [ "$epc_running" == "yes" ]; then

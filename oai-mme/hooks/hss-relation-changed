@@ -134,13 +134,11 @@ else
    fi
 
 fi
+    
 
 set -ex
 
 hss_opc_val=`relation-get opc-key`
 
 echo $hss_opc_val > /tmp/opcvalue
-
-    
-
 
