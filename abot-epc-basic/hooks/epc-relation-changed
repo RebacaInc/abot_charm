@@ -8,7 +8,7 @@ set -ex
 mobile_country_code=`relation-get MCC`
 mobile_network_code=`relation-get MNC`
 mme_ip_address_ipv4=`relation-get mme_ip`
-epc_running=`relation-get epc__running`
+epc_running=`relation-get epc_running`
 mme_running=`relation-get mme_running`
 spgw_ip_address_ipv4=`relation-get spgw_ip_address_ipv4`
 unhex_key=`relation-get opc-key`
