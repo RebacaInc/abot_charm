@@ -1,9 +1,0 @@
-#!/bin/bash
-
-set -eux
-
-ABOT_DEPLOY_DIR=/etc/rebaca-test-suite
-juju-log "Setting EPC charm relation variables"
-relation-set TAC=1
-sed -i "s/ABOT.ENB.tracking_area_code=[^ ]*/ABOT.ENB.tracking_area_code=1/" ${ABOT_DEPLOY_DIR}/config/ABotConfig.properties
-
