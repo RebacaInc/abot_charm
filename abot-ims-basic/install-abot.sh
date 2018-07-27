@@ -67,7 +67,7 @@ function check_input {
     exit_on_error "Application Name $APP_NAME"
 
     case $APP_VERSION in
-        3.1.0) true;;
+        3.[0-9].[0-9]) true;;
         *) usage;;
     esac
     exit_on_error "Version $APP_VERSION"
@@ -343,12 +343,17 @@ ABOT_URL="http://115.249.81.187:8080/rebaca"
 ABOT_DEBIAN=${APP_NAME}_${APP_VERSION}_all.deb
 
 # Installing dependencies for abot-volte-basic
-echo_blue "Oracle Java Prerequisites..."
-add-apt-repository -y ppa:webupd8team/java
+#echo_blue "Oracle Java Prerequisites..."
+#add-apt-repository -y ppa:webupd8team/java
 apt-get update
-echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
-echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
-apt-get -y install oracle-java8-installer
+#echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
+#echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
+#apt-get -y install oracle-java8-installer
+apt-get -y install openjdk-8-jdk
+
+#Set JAVA_HOME variable
+echo "Java_HOME=/usr/lib/jvm/java-8-openjdk-amd64" >> /etc/environment
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
 # Download ABot Debian and Install
 mkdir -p ${ABOT_DIR}/payload
