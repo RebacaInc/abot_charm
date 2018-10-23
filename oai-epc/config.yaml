@@ -1,6 +1,6 @@
 options:
    branch:
-     default: "v0.3.2-branch"
+     default: "develop"
      description: |
        branch indicates which installation you want to do. 
      type: string
