@@ -56,12 +56,11 @@ install_packages(){
     apt install -y mysql-client
 }
 
-clone_repro(){
+clone_repo(){
 
     juju-log "Fetching and installing OpenAirInterface HSS"
     status-set maintenance "Fetching and installing OpenAirInterface HSS"
     
-    echo -n | openssl s_client -showcerts -connect gitlab.eurecom.fr:443 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' >> /etc/ssl/certs/ca-certificates.crt
     
     if [ -d "$openair_path"  ]; then
 	#   juju-log "Removing the installation directory"
@@ -79,7 +78,7 @@ clone_repro(){
     else
 	#Save the current hosts file
 	cp -f /etc/hosts /home
-	git clone https://gitlab.eurecom.fr/oai/openair-cn.git $openair_path
+	git clone https://github.com/OPENAIRINTERFACE/openair-cn $openair_path
 	cd $openair_path
 	git checkout $branch
 	shopt -s nocasematch
@@ -197,7 +196,7 @@ machine_type=`virt-what`
 
 install_packages
 
-clone_repro
+clone_repo
 
 juju_install_kernel
 
