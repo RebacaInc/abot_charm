@@ -95,7 +95,6 @@ juju_install_kernel(){
 
 clone_repo(){
     status-set maintenance "Fetching OpenAir-CN/MME"
-    echo -n | openssl s_client -showcerts -connect gitlab.eurecom.fr:443 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' >> /etc/ssl/certs/ca-certificates.crt
 
     if [ -d "$openair_path"  ]; then
         juju-log "Updating the installation directory"
@@ -110,7 +109,7 @@ clone_repo(){
     else
        #Save the current hosts file
        cp -f /etc/hosts /home
-       git clone --branch $branch https://gitlab.eurecom.fr/oai/openair-cn.git $openair_path
+       git clone --branch $branch https://github.com/OPENAIRINTERFACE/openair-cn $openair_path
        cd $openair_path 
        if [ "$revision" != "head" ]; then 
            git checkout $revision
