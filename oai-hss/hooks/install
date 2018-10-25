@@ -69,7 +69,6 @@ clone_repo(){
 	cd $openair_path
 	git reset --hard HEAD 
 	git checkout $branch 
-	git pull 
 	shopt -s nocasematch
 	if [[ "$revision" != "HEAD" ]]; then 
 	    git checkout $revision
