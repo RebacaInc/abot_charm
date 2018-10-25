@@ -109,8 +109,9 @@ clone_repo(){
     else
        #Save the current hosts file
        cp -f /etc/hosts /home
-       git clone --branch $branch https://github.com/OPENAIRINTERFACE/openair-cn $openair_path
+       git clone https://github.com/OPENAIRINTERFACE/openair-cn $openair_path
        cd $openair_path 
+       git checkout $branch
        if [ "$revision" != "head" ]; then 
            git checkout $revision
        fi
