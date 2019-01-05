@@ -136,7 +136,7 @@ fi
 
 install_required_kernel(){
 version=3.19
-wget -r -e robots=off --accept-regex "(.*generic.*amd64)|(all).deb" http://kernel.ubuntu.com/~kernel-ppa/mainline/v${version}-vivid/
+wget -r -e robots=off --accept-regex "(.*generic.*amd64)|(all).deb" https://kernel.ubuntu.com/~kernel-ppa/mainline/v${version}-vivid/
 dpkg -i kernel.ubuntu.com/*/*/*/*deb
 }
 
