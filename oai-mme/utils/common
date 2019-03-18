@@ -168,15 +168,7 @@ user_conf(){
 }
 
 install_required_kernel(){
-  version=3.19
-
-  if [ "$(cat $CHARM_DIR/.kernel)" == "lowlatency" ]; then 
-      wget -r -e robots=off --accept-regex "(.*lowlatency.*amd64)|(all).deb" https://kernel.ubuntu.com/~kernel-ppa/mainline/v${version}-vivid/
-  else
-      wget -r -e robots=off --accept-regex "(.*generic.*amd64)|(all).deb" https://kernel.ubuntu.com/~kernel-ppa/mainline/v${version}-vivid/
-  fi
-
-  dpkg -i kernel.ubuntu.com/*/*/*/*deb
+  apt-get install -y linux-image-3.19.0-61-lowlatency linux-headers-3.19.0-61-lowlatency
 }
 
 check_current_kernel(){
