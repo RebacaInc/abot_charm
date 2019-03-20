@@ -9,8 +9,8 @@ options:
      description: get a specific revison from the openair-cn git repository. 
      type: string
    kernel: 
-     default: "generic"
-     description: set the default kerenl, generic or lowlatency. 
+     default: "lowlatency"
+     description: set the default kernel, generic or lowlatency. 
      type: string
    realm:
      default: "openair4G.eur"
