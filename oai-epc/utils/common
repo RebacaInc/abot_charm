@@ -129,9 +129,7 @@ sed -r -i "/OUTPUT/ s/\".*\"/\"CONSOLE\"/" $epc_conf_path/epc.conf
 }
 
 install_required_kernel(){
-version=3.19
-wget -r -e robots=off --accept-regex "(.*generic.*amd64)|(all).deb" https://kernel.ubuntu.com/~kernel-ppa/mainline/v${version}-vivid/
-dpkg -i kernel.ubuntu.com/*/*/*/*deb
+  apt-get install -y linux-image-3.19.0-61-lowlatency linux-headers-3.19.0-61-lowlatency
 }
 
 check_current_kernel(){
