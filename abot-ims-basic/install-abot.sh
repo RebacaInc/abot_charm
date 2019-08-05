@@ -339,7 +339,7 @@ done
 check_input
 
 ABOT_DIR=/var/lib/${APP_NAME}
-ABOT_URL="http://115.249.81.187:8080/rebaca"
+ABOT_URL="http://182.74.103.226:8080/rebaca"
 ABOT_DEBIAN=${APP_NAME}_${APP_VERSION}_all.deb
 
 # Installing dependencies for abot-volte-basic
