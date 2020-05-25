@@ -92,13 +92,13 @@ function install_oai_packages {
         make clean &> /dev/null;
         make;
         cp -f ue_ip.ko ${ABOT_DEPLOY_DIR}/oaisim/bin;
-    } &> ${ABOT_DEPLOY_DIR}/oaisim/cmake_targets/log/ue_ip.txt        
-    
+    } &> ${ABOT_DEPLOY_DIR}/oaisim/cmake_targets/log/ue_ip.txt
+
     exit_on_error "Installing oaisim"
 
     # Not installing additional tools
     # for the time being
-    
+
     # check_install_additional_tools
 }
 
@@ -120,8 +120,8 @@ function set_ixia_ims_information {
     read -p "IMS DNS IP Address (e.g. IMS DNS Server): " DNS_IP; DNS_IP=${DNS_IP:="192.168.255.255"}
     echo $DNS_IP > ${ABOT_DEPLOY_DIR}/dns_ip
     read -p "IMS Clearwater Ellis IP Address (e.g. Clearwater Ellis IP): " ELLIS_IP; ELLIS_IP=${ELLIS_IP:=192.168.255.255}
-    echo $ELLIS_IP > ${ABOT_DEPLOY_DIR}/ellis_ip 
-    read -p "IMS IxLoad IP Address: " IXLOAD_IP; IXLOAD_IP=${IXLOAD_IP:=192.168.255.255} 
+    echo $ELLIS_IP > ${ABOT_DEPLOY_DIR}/ellis_ip
+    read -p "IMS IxLoad IP Address: " IXLOAD_IP; IXLOAD_IP=${IXLOAD_IP:=192.168.255.255}
     echo $IXLOAD_IP > ${ABOT_DEPLOY_DIR}/ixload_ip
     read -p "IMS IxChassis IP Address: " IXCHASSIS_IP; IXCHASSIS_IP=${IXCHASSIS_IP:=192.168.255.255}
     echo $IXCHASSIS_IP > ${ABOT_DEPLOY_DIR}/ixchassis_ip
@@ -169,13 +169,13 @@ function set_sut_epc_information {
     read -p "EPC Mobile Network Code (default: 93): " MNC; MNC=${MNC:="93"}
     sed -i "s/ABOT.ENB.mobile_network_code=[^ ]*/ABOT.ENB.mobile_network_code=${MNC}/" \
         ${ABOT_DEPLOY_DIR}/config/abot-epc-basic_defaults.conf
-    
+
     read -p "MME IP Address: " EPC_MME_IP; EPC_MME_IP=${EPC_MME_IP:="192.168.255.255"}
     sed -i "s/ABOT.ENB.mme_ip_address_ipv4=[^ ]*/ABOT.ENB.mme_ip_address_ipv4=${EPC_MME_IP}/" \
         ${ABOT_DEPLOY_DIR}/config/abot-epc-basic_defaults.conf
     sed -i "s/MME.SecureShell.IPAddress=[^ ]*/MME.SecureShell.IPAddress=${EPC_MME_IP}/" \
         ${ABOT_DEPLOY_DIR}/config/ABotConfig.properties
-    
+
     read -p "EPC Subscriber OPC (e.g. 79477a68055263cb0c3052057e0d20b8): " EPC_OPC; EPC_OPC=${EPC_OPC:="79477a68055263cb0c3052057e0d20b8"}
     sed -i -e "s/OPC=\".*\";/OPC=\"${EPC_OPC}\";/" \
         ${ABOT_DEPLOY_DIR}/oaisim/config/ue_eurecom_test_sfr.conf
@@ -224,13 +224,13 @@ function verify_dns_records {
 }
 
 function set_keys {
-    # Generate ssh key for root user 
+    # Generate ssh key for root user
     if [ ! -f /root/.ssh/id_rsa.pub ];
     then
         ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
         pub_key=`cat /root/.ssh/id_rsa.pub`
         echo "${pub_key}" | sed 's/\r//' >> /root/.ssh/authorized_keys
-    else 
+    else
         pub_key=`cat /root/.ssh/id_rsa.pub`
         echo "${pub_key}" | sed 's/\r//' >> /root/.ssh/authorized_keys
     fi
@@ -339,7 +339,7 @@ done
 check_input
 
 ABOT_DIR=/var/lib/${APP_NAME}
-ABOT_URL="http://182.74.103.226:8080/rebaca"
+ABOT_URL="http://artifacts.opnfv.org/functest/epc"
 ABOT_DEBIAN=${APP_NAME}_${APP_VERSION}_all.deb
 
 # Installing dependencies for abot-volte-basic
