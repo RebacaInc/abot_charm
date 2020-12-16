@@ -29,26 +29,26 @@
 # either expressed or implied, of the FreeBSD Project.
 #
 ################################################################################
-# file install 
+# file install
 # brief install the oai-hss from the openairinterface git repository
-# author  navid.nikaein@eurecom.fr and A. B. Molini   
+# author  navid.nikaein@eurecom.fr and A. B. Molini
 
 install_packages(){
     status-set maintenance "Installing some dependencies"
-    
+
     gitAlreadyInstalled=$(dpkg --get-selections git 2>/dev/null | grep -c 'install') || true
     if [ ! $gitAlreadyInstalled -eq 1 ]; then # If git is NOT installed
 	apt-get install -y --force-yes git  # Ensure necessary git dependency exist.
     fi
     atAlreadyInstalled=$(dpkg --get-selections at 2>/dev/null | grep -c 'install') || true
-    if [ ! $atAlreadyInstalled -eq 1 ]; then 
+    if [ ! $atAlreadyInstalled -eq 1 ]; then
 	apt-get install -y --force-yes at
     fi
     virtwhatAlreadyInstalled=$(dpkg --get-selections virt-what 2>/dev/null | grep -c 'install') || true
-    if [ ! $virtwhatAlreadyInstalled -eq 1 ]; then 
+    if [ ! $virtwhatAlreadyInstalled -eq 1 ]; then
 	apt-get install -y --force-yes virt-what
-    fi 
-    
+    fi
+
     PASSWORD="linux"
     echo "mysql-server mysql-server/root_password password $PASSWORD" | debconf-set-selections
     echo "mysql-server mysql-server/root_password_again password $PASSWORD" | debconf-set-selections
@@ -60,39 +60,39 @@ clone_repo(){
 
     juju-log "Fetching and installing OpenAirInterface HSS"
     status-set maintenance "Fetching and installing OpenAirInterface HSS"
-    
-    
+
+
     if [ -d "$openair_path"  ]; then
 	#   juju-log "Removing the installation directory"
 	#   rm -rf $openair_path
 	juju-log "Updating the installation directory"
 	cd $openair_path
-	git reset --hard HEAD 
-	git checkout $branch 
+	git reset --hard HEAD
+	git checkout $branch
 	shopt -s nocasematch
-	if [[ "$revision" != "HEAD" ]]; then 
+	if [[ "$revision" != "HEAD" ]]; then
 	    git checkout $revision
-	fi 
+	fi
 	cd -
     else
 	#Save the current hosts file
 	cp -f /etc/hosts /home
-	git clone https://github.com/OPENAIRINTERFACE/openair-cn $openair_path
+	git clone https://github.com/OPENAIRINTERFACE/openair-hss $openair_path
 	cd $openair_path
 	git checkout $branch
 	shopt -s nocasematch
-	if [[ "$revision" != "HEAD" ]]; then 
+	if [[ "$revision" != "HEAD" ]]; then
 	    git checkout $revision
-	fi 
+	fi
 	cd -
     fi
-  
+
     #We don't need phpmyadmin in the installation as it is provided by phpmyadmin charm
     #sed -i "s/phpmyadmin/#phpmyadmin/" $tools_path/build_helper
     sed -i '/phpmyadmin/d' $tools_path/build_helper
     #we don't either want the low latency kernel for HSS
-    sed -i -r "s/(check_kernel_release_and_install_xtables_addons_oai[^()]+)/#\1/" $tools_path/build_helper  
-    
+    sed -i -r "s/(check_kernel_release_and_install_xtables_addons_oai[^()]+)/#\1/" $tools_path/build_helper
+
 }
 
 juju_install_kernel(){
@@ -102,31 +102,31 @@ juju_install_kernel(){
     if [[ $REQUIRED_KERNEL_IS_INSTALLED == true ]]; then
 	juju-log "required kernel is already installed"
 	status-set maintenance "required kernel is already installed"
-    else	
+    else
 	if [ "$machine_type"  == "lxc" -o "$machine_type" == "docker" ]; then
 	    juju-log "Can't install the required kernel in $machine_type env. Proceed with the current kernel."
-	else  
-	    if  [ "$machine_type"  == "" ] ; then 
+	else
+	    if  [ "$machine_type"  == "" ] ; then
 		juju-log "Please install kerenel version 3.19 on the host".
-	    else 
+	    else
 		check_current_kernel
 		if [[ $REQUIRED_KERNEL_IS_INSTALLED == false ]]; then
 		    # a way to avoid looping for lxc env.
-		    if [ "$(cat $CHARM_DIR/.reboot)" != "reboot" ]; then  
-			echo "reboot" > $CHARM_DIR/.reboot 
+		    if [ "$(cat $CHARM_DIR/.reboot)" != "reboot" ]; then
+			echo "reboot" > $CHARM_DIR/.reboot
 			juju-log "installing the required kernel and reboot"
 			status-set maintenance "installing the required kernel and rebooting"
 			install_required_kernel
     			juju-reboot --now
-		    else 
+		    else
 			juju-log "Failed to install the kernel 3.19. Proceed with the current kernel."
-		    fi 
+		    fi
 		    #if we reboot now, the install is blocked here and reschedule after the reboot
 		    #and xtables will be installed
 		fi
 	    fi
-	fi 
-    fi 
+	fi
+    fi
 }
 
 update_hostname(){
@@ -148,9 +148,9 @@ configure_hosts(){
 build_hss(){
     juju-log "Build HSS and install required packages"
     status-set maintenance "Build HSS and install required packages"
-    
+
     $build_run_scripts/build_hss -c -i -F
-    
+
     #I need to avoid to execute create_hss_database because I don't need it
     #so in files direcotry inside my charm I have the right cmakelists file
     #cp $CHARM_DIR/files/CMakeLists.txt $hss_path/CMakeLists.txt
@@ -217,6 +217,3 @@ fi
 
 
 status-set blocked "Waiting for a mysql/db relation to start"
-
-
-
